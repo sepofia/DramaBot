@@ -1,5 +1,6 @@
 # Ignore the IDE files
 .idea/
+__pycache__/
 
 # Ignore the config-file
 creating_config.py
@@ -7,5 +8,4 @@ config.yaml
 
 # Ignore the help-files
 helper
-
-
+answer_structure
