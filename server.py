@@ -4,12 +4,26 @@
 - get the actual information from the kinopoiskAPI
 - send information to the bot
 
-- *default parameters' values in the config-file (with TOKEN)
+- *default parameters' values in the config-file
 """
 
 
+import yaml
 import requests
 import pandas as pd
+
+
+with open('config_server.yaml', 'r') as handle:
+    config = yaml.full_load(handle)
+
+
+def load_data(query: dict) -> dict:
+    headers = query['headers']
+    url = query['url']
+    params = query['params']
+
+    response = requests.get(url, headers=headers, params=params, timeout=60)
+    return response.json()
 
 
 def prepare_data(dataset: list, count_elem: int) -> pd.DataFrame:
@@ -63,16 +77,9 @@ def prepare_data(dataset: list, count_elem: int) -> pd.DataFrame:
     return df[:count_elem]
 
 
-def load_data(query: dict) -> dict:
-    headers = query['headers']
-    url = query['url']
-    params = query['params']
+def find_serials() -> pd.DataFrame:  # TODO: sending user's parameters
+    query = config['default_query']  # reading from config-file
 
-    response = requests.get(url, headers=headers, params=params, timeout=60)
-    return response.json()
-
-
-def find_serials(query: dict[str, str]) -> pd.DataFrame:
     count_elem = int(query['count_elem'])
     response = load_data(query)
     return prepare_data(response['docs'], count_elem)

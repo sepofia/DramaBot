@@ -3,8 +3,8 @@
 __pycache__/
 
 # Ignore the config-file
-creating_config.py
-config.yaml
+creating_config*.py
+config*.yaml
 
 # Ignore the help-files
 helper

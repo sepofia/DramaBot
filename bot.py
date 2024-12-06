@@ -6,7 +6,6 @@
 
 import logging
 import yaml
-import pandas as pd
 from telegram import Update
 from telegram.ext import ApplicationBuilder, ContextTypes, CommandHandler
 
@@ -20,7 +19,7 @@ logging.basicConfig(
 )
 
 # parsing config-file
-with open('config.yaml') as handle:
+with open('config_bot.yaml', 'r') as handle:
     configs = yaml.full_load(handle)
 
 TOKEN = configs['token']
@@ -33,9 +32,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 async def last_doramas(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    query = configs['default_query']
-
-    answer = find_serials(query)
+    answer = find_serials()
     if len(answer) == 0:
         text = "Unfortunately I can't find a good dorama for you now, but I'm still learning 🥺"
     else:
