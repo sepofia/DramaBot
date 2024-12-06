@@ -19,7 +19,7 @@ logging.basicConfig(
 )
 
 # parsing config-file
-with open('config_bot.yaml', 'r') as handle:
+with open('configuration/config_bot.yaml', 'r') as handle:
     configs = yaml.full_load(handle)
 
 TOKEN = configs['token']
@@ -31,8 +31,22 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await context.bot.send_message(chat_id=update.effective_chat.id, text=text)
 
 
+async def random_dorama(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    answer = find_serials('random')
+    text_items = ['Here is your random dorama from 2016 to 2024 and with a kinopoisk rating of over 7.1:\n']
+    for j in ['Name', 'Description', 'KP rating', 'Genres', 'Countries']:
+        if j == 'Name':
+            item = f'[{answer[j]}]({answer["Link"]})'
+        else:
+            item = f'*{j}*: _{answer[j]}_'
+        text_items.append(item)
+    text_items.append('')
+    text = '\n'.join(text_items)
+    await context.bot.send_message(chat_id=update.effective_chat.id, text=text, parse_mode='Markdown')
+
+
 async def last_doramas(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    answer = find_serials()
+    answer = find_serials('last')
     if len(answer) == 0:
         text = "Unfortunately I can't find a good dorama for you now, but I'm still learning 🥺"
     else:
@@ -62,6 +76,9 @@ if __name__ == '__main__':
 
     last_doramas_handler = CommandHandler('last_doramas', last_doramas)
     application.add_handler(last_doramas_handler)
+
+    random_dorama_handler = CommandHandler('random_dorama', random_dorama)
+    application.add_handler(random_dorama_handler)
 
     end_handler = CommandHandler('end', end)
     application.add_handler(end_handler)

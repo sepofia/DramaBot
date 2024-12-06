@@ -11,9 +11,10 @@
 import yaml
 import requests
 import pandas as pd
+from random import randrange
 
 
-with open('config_server.yaml', 'r') as handle:
+with open('configuration/config_server.yaml', 'r') as handle:
     config = yaml.full_load(handle)
 
 
@@ -26,7 +27,7 @@ def load_data(query: dict) -> dict:
     return response.json()
 
 
-def prepare_data(dataset: list, count_elem: int) -> pd.DataFrame:
+def prepare_data(dataset: list) -> pd.DataFrame:
     data = []
     for elem in dataset:
         if 'names' in elem:
@@ -41,6 +42,9 @@ def prepare_data(dataset: list, count_elem: int) -> pd.DataFrame:
         else:
             # choose the default name
             name = elem['name']
+
+        # description
+        description = elem['description']
 
         # rating: kp and imdb
         kp = round(elem['rating']['kp'], 1)
@@ -63,6 +67,7 @@ def prepare_data(dataset: list, count_elem: int) -> pd.DataFrame:
         # creating element of dataset:
         new_elem = {
             'Name': name
+            , 'Description': description
             , 'KP rating': kp
             , 'IMDB rating': imdb
             , 'Genres': genres
@@ -74,12 +79,37 @@ def prepare_data(dataset: list, count_elem: int) -> pd.DataFrame:
 
     df = pd.DataFrame(data)
     df.sort_values(['Release year', 'KP rating'], ascending=False, inplace=True, ignore_index=True)
+    return df
+
+
+def random_doramas(df: pd.DataFrame) -> pd.Series:
+    random_id = randrange(len(df))
+    return df.iloc[random_id]
+
+
+def last_doramas(df: pd.DataFrame, count_elem: int) -> pd.DataFrame:
     return df[:count_elem]
 
 
-def find_serials() -> pd.DataFrame:  # TODO: sending user's parameters
-    query = config['default_query']  # reading from config-file
+# --------------------------------------------- THE MAIN PART ---------------------------------------------
+def find_serials(mode: str) -> pd.DataFrame | pd.Series:  # TODO: sending user's parameters
+    # DIFFERENT MODES:
+    # best last doramas
+    if mode == 'last':
+        # reading from config-file
+        query = config['default_query_last']
+        count_elem = int(query['count_elem'])
 
-    count_elem = int(query['count_elem'])
-    response = load_data(query)
-    return prepare_data(response['docs'], count_elem)
+        response = load_data(query)
+        df = prepare_data(response['docs'])
+        return last_doramas(df, count_elem)
+
+    # random dorama
+    if mode == 'random':
+        # reading from config-file
+        query = config['default_query_random']
+        # count_elem = int(query['count_elem'])
+
+        response = load_data(query)
+        df = prepare_data(response['docs'])
+        return random_doramas(df)
