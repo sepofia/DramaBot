@@ -24,28 +24,23 @@ def load_data(query: dict) -> dict:
     params = query['params']
 
     response = requests.get(url, headers=headers, params=params, timeout=60)
-    return response.json()
+    response_json = response.json()
+    for page in range(2, response_json['pages']):
+        params['page'] = page
+        add_response = requests.get(url, headers=headers, params=params, timeout=60)
+        add_response_json = add_response.json()
+        response_json['docs'].extend(add_response_json['docs'])
+    return response_json
 
 
 def prepare_data(dataset: list) -> pd.DataFrame:
     data = []
     for elem in dataset:
-        if 'names' in elem:
-            # check names for RU name
-            for name_i in elem['names']:
-                if name_i['language'] == 'RU':
-                    name = name_i['name']
-                    break
-            else:
-                # don't find RU name
-                name = elem['name']
-        else:
-            # choose the default name
-            name = elem['name']
-
-        # description
+        # name and description
+        name = elem['name']
         description = elem['description']
-
+        # release year
+        release_year = elem['year']
         # rating: kp and imdb
         kp = round(elem['rating']['kp'], 1)
         imdb = round(elem['rating']['imdb'], 1)
@@ -57,12 +52,9 @@ def prepare_data(dataset: list) -> pd.DataFrame:
         list_countries = [country['name'] for country in elem['countries']]
         countries = ', '.join(list_countries)
 
-        # release year
-        release_year = elem['year']
-
         # create link
         kp_id = elem['id']
-        link = f'https://www.kinopoisk.ru/series/{str(kp_id)}/'  # TODO: set links template in the .yaml
+        link = f'https://www.kinopoisk.ru/series/{str(kp_id)}/'
 
         # creating element of dataset:
         new_elem = {
@@ -82,19 +74,21 @@ def prepare_data(dataset: list) -> pd.DataFrame:
     return df
 
 
-def random_doramas(df: pd.DataFrame) -> pd.Series:
+def random_dramas(df: pd.DataFrame) -> pd.Series:
     random_id = randrange(len(df))
     return df.iloc[random_id]
 
 
-def last_doramas(df: pd.DataFrame, count_elem: int) -> pd.DataFrame:
+def slice_list_dramas(df: pd.DataFrame, count_elem: int) -> pd.DataFrame:
     return df[:count_elem]
 
 
 # --------------------------------------------- THE MAIN PART ---------------------------------------------
-def find_serials(mode: str) -> pd.DataFrame | pd.Series:  # TODO: sending user's parameters
+def find_serials(mode: str
+                 , parameters: dict = None
+                 ) -> pd.DataFrame | pd.Series:  # TODO: sending user's parameters
     # DIFFERENT MODES:
-    # best last doramas
+    # best last dramas
     if mode == 'last':
         # reading from config-file
         query = config['default_query_last']
@@ -102,14 +96,25 @@ def find_serials(mode: str) -> pd.DataFrame | pd.Series:  # TODO: sending user's
 
         response = load_data(query)
         df = prepare_data(response['docs'])
-        return last_doramas(df, count_elem)
+        return slice_list_dramas(df, count_elem)
 
-    # random dorama
+    # random drama
     if mode == 'random':
         # reading from config-file
         query = config['default_query_random']
-        # count_elem = int(query['count_elem'])
 
         response = load_data(query)
         df = prepare_data(response['docs'])
-        return random_doramas(df)
+        return random_dramas(df)
+
+    # drama by user's parameters
+    if mode == 'user choose':
+        # reading from config-file
+        query = config['default_query_user']
+        count_elem = int(query['count_elem'])
+        # adding user's parameters
+        query['params'].update(parameters)
+
+        response = load_data(query)
+        df = prepare_data(response['docs'])
+        return slice_list_dramas(df, count_elem)

@@ -10,3 +10,4 @@ config*.yaml
 helper
 answer_structure
 ideas
+/database/
