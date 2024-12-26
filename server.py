@@ -63,14 +63,14 @@ def prepare_data(dataset: list) -> pd.DataFrame:
             , 'KP rating': kp
             , 'IMDB rating': imdb
             , 'Genres': genres
-            , 'Countries': countries
+            , 'Country': countries
             , 'Release year': release_year
             , 'Link': link
         }
         data.append(new_elem)
 
     df = pd.DataFrame(data)
-    df.sort_values(['Release year', 'KP rating'], ascending=False, inplace=True, ignore_index=True)
+    df.sort_values(['Release year', 'KP rating'], ascending=False, inplace=True, ignore_index=True)  # TODO: move!
     return df
 
 
@@ -111,7 +111,8 @@ def find_serials(mode: str
     if mode == 'user choose':
         # reading from config-file
         query = config['default_query_user']
-        count_elem = int(query['count_elem'])
+        count_elem = parameters['count']
+        del parameters['count']
         # adding user's parameters
         query['params'].update(parameters)
 
