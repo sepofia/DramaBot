@@ -6,9 +6,10 @@ it might be reasonable to add choosing language:
 
 import pandas as pd
 
+# TODO: move to the json-file
 COLUMNS = {
     'ru': ['Название', 'Описание', 'Рейтинг Кинопоиска', 'Жанры', 'Страна']
-    , 'en': ['Name', 'Description', 'KP rating', 'Genres', 'Countries']
+    , 'en': ['Name', 'Description', 'KP rating', 'Genres', 'Country']
 }
 
 
@@ -28,16 +29,12 @@ def random_drama(drama: pd.DataFrame | pd.Series, language: str) -> str:
         'ru': 'Здесь твоя случайная дорама не старше 2016 года и с рейтингом кинопоиска выше 7.1:\n'
         , 'en': 'Here is your random K-drama from 2016 to 2024 and with a kinopoisk rating of over 7.1:\n'
     }
-    columns = {
-        'ru': ['Название', 'Описание', 'Рейтинг Кинопоиска', 'Жанры', 'Страна']
-        , 'en': ['Name', 'Description', 'KP rating', 'Genres', 'Countries']
-    }
     text_items = [header[language]]
-    for j, col in enumerate(['Name', 'Description', 'KP rating', 'Genres', 'Countries']):
+    for j, col in enumerate(COLUMNS['en']):
         if col == 'Name':
             item = f'[{drama[col]}]({drama["Link"]})'
         else:
-            item = f'*{columns[language][j]}*: _{drama[col]}_'
+            item = f'*{COLUMNS[language][j]}*: _{drama[col]}_'
         text_items.append(item)
     text_items.append('')
     return '\n'.join(text_items)
@@ -58,7 +55,7 @@ def last_dramas(dramas_df: pd.DataFrame, language: str) -> str:
 
     text_items = [header[language]]
     for i in range(len(dramas_df)):
-        for j, col in enumerate(['Name', 'KP rating', 'Genres', 'Countries']):
+        for j, col in enumerate(COLUMNS['en']):
             if col == 'Name':
                 item = f'*{i + 1}.* [{dramas_df[col][i]}]({dramas_df["Link"][i]})'
             else:
@@ -86,7 +83,7 @@ def user_dramas(dramas_df: pd.DataFrame | None, language: str) -> str:
 
     text_items = [header[language]]
     for i in range(len(dramas_df)):
-        for j, col in enumerate(['Name', 'KP rating', 'Genres', 'Countries']):
+        for j, col in enumerate(COLUMNS['en']):
             if col == 'Name':
                 item = f'*{i + 1}.* [{dramas_df[col][i]}]({dramas_df["Link"][i]})'
             else:
@@ -94,3 +91,59 @@ def user_dramas(dramas_df: pd.DataFrame | None, language: str) -> str:
             text_items.append(item)
         text_items.append('')
     return '\n'.join(text_items)
+
+
+def select(language: str) -> str:
+    text = {
+        'ru': 'Давай выберем дораму по твоим пожеланиям! Сначала выбери жанр:'
+              '\n_Для прекращения поиска отправь команду_ /cancel.\n'
+        , 'en': "Let's choose K-dramas especially for you! First, choose a genre:"
+                "\n_Send the_ /cancel _command to stop._"
+    }
+    return text[language]
+
+
+def genre(language: str) -> str:
+    text = {
+        'ru': 'Запомнила! Теперь укажи год производства:'
+              '\n_Для прекращения поиска отправь команду_ /cancel.\n'
+        , 'en': 'Memorize! Now select a production year:'
+                '\n_Send the_ /cancel _command to stop._'
+    }
+    return text[language]
+
+
+def year(language: str) -> str:
+    text = {
+        'ru': 'Отлично! Теперь укажи страну:'
+              '\n_Для прекращения поиска отправь команду_ /cancel.\n'
+        , 'en': 'Great! Then specify the county:'
+                '\n_Send the_ /cancel _command to stop._'
+    }
+    return text[language]
+
+
+def country(language: str) -> str:
+    text = {
+        'ru': 'И последний вопрос: сколько дорам мне нужно найти?'
+              '\n_Для прекращения поиска отправь команду_ /cancel.\n'
+        , 'en': 'And the last question: how many K-drams do you want?'
+                '\n_Send the_ /cancel _command to stop._'
+    }
+    return text[language]
+
+
+def count(language: str) -> str:
+    text = {
+        'ru': 'Всё записала! Сейчас найду для тебя подходящие дорамы ^-^'
+        , 'en': "Noted! Let's see what I can find for you ^-^"
+    }
+    return text[language]
+
+
+def cancel(language: str) -> str:
+    text = {
+        'ru': 'Не вопрос ;) \nВыберем дорамы для тебя как-нибудь в другой раз!'
+        , 'en': "Ok! We can choose K-dramas for you at any time ;)"
+    }
+    return text[language]
