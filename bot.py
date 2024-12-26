@@ -153,8 +153,7 @@ async def country(update: Update, context: CallbackContext) -> int:
 
     reply_keyboard = BUTTONS['counts']
     text = messages.country(update.message.from_user.language_code)
-    if update.message.text != 'любая':
-        commands[update.message.chat.id]['countries.name'] = update.message.text
+    commands[update.message.chat.id]['countries.name'] = update.message.text
 
     await update.message.reply_text(
         text=text,
@@ -220,7 +219,7 @@ if __name__ == '__main__':
 
     genre_names = "^(мелодрама|драма|комедия|детектив|триллер|история|ужасы|любой)$"
     year_names = "^(2000 - 2024|2008 - 2024|2014 - 2024|2020 - 2024|любой)$"
-    country_names = "^(Корея Южная|Корея Северная|Китай|Япония|любая)$"
+    country_names = "^(Корея Южная|Корея Северная|Китай|Япония)$"
     count_names = "^(1|3|5|10)$"
     conv_handler = ConversationHandler(
         entry_points=[CommandHandler("select", select)],

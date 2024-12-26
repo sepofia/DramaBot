@@ -22,6 +22,3 @@ def check_user(user: dict):
 def find_user(user_id: int) -> pd.DataFrame | pd.Series:
     users_df = load_database()
     return users_df.loc[users_df['id'] == user_id, :]
-
-
-# def new_command(user_id: int, field)

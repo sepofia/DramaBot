@@ -58,9 +58,11 @@ def last_dramas(dramas_df: pd.DataFrame, language: str) -> str:
         for j, col in enumerate(COLUMNS['en']):
             if col == 'Name':
                 item = f'*{i + 1}.* [{dramas_df[col][i]}]({dramas_df["Link"][i]})'
+                text_items.append(item)
             else:
-                item = f'*{COLUMNS[language][j]}*: _{dramas_df[col][i]}_'
-            text_items.append(item)
+                if dramas_df[col][i] != 'None':
+                    item = f'*{COLUMNS[language][j]}*: _{dramas_df[col][i]}_'
+                    text_items.append(item)
         text_items.append('')
     return '\n'.join(text_items)
 
@@ -68,10 +70,8 @@ def last_dramas(dramas_df: pd.DataFrame, language: str) -> str:
 def user_dramas(dramas_df: pd.DataFrame | None, language: str) -> str:
 
     unsuccessful = {
-        'ru': 'К сожалению, я не смогла найти подходящую дораму по твоим рекомендациям...\n'
-              'Пример запроса: `/user_dramas genres.name мелодрама rating.kp 7.8-10 year 2019-2024`'
-        , 'en': "Unfortunately I can't find good K-dramas for you by your recommendations...\n"
-                "Example of query: `/user_dramas genres.name мелодрама rating.kp 7.8-10 year 2019-2024`"
+        'ru': 'К сожалению, я не смогла найти подходящую дораму по твоим рекомендациям...6'
+        , 'en': "Unfortunately I can't find good K-dramas for you by your recommendations..."
     }
     header = {
         'ru': 'Здесь 5 лучших корейских дорам по твоему запросу:\n'
@@ -86,9 +86,11 @@ def user_dramas(dramas_df: pd.DataFrame | None, language: str) -> str:
         for j, col in enumerate(COLUMNS['en']):
             if col == 'Name':
                 item = f'*{i + 1}.* [{dramas_df[col][i]}]({dramas_df["Link"][i]})'
+                text_items.append(item)
             else:
-                item = f'*{COLUMNS[language][j]}*: _{dramas_df[col][i]}_'
-            text_items.append(item)
+                if dramas_df[col][i] != 'None':
+                    item = f'*{COLUMNS[language][j]}*: _{dramas_df[col][i]}_'
+                    text_items.append(item)
         text_items.append('')
     return '\n'.join(text_items)
 

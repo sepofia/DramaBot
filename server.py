@@ -70,7 +70,6 @@ def prepare_data(dataset: list) -> pd.DataFrame:
         data.append(new_elem)
 
     df = pd.DataFrame(data)
-    df.sort_values(['Release year', 'KP rating'], ascending=False, inplace=True, ignore_index=True)  # TODO: move!
     return df
 
 
@@ -96,6 +95,7 @@ def find_serials(mode: str
 
         response = load_data(query)
         df = prepare_data(response['docs'])
+        df.sort_values(['Release year', 'KP rating'], ascending=False, inplace=True, ignore_index=True)
         return slice_list_dramas(df, count_elem)
 
     # random drama
@@ -118,4 +118,5 @@ def find_serials(mode: str
 
         response = load_data(query)
         df = prepare_data(response['docs'])
+        df.sort_values(['KP rating', 'Release year'], ascending=False, inplace=True, ignore_index=True)
         return slice_list_dramas(df, count_elem)
