@@ -38,7 +38,12 @@ def prepare_data(dataset: list) -> pd.DataFrame:
     for elem in dataset:
         # name and description
         name = elem['name']
-        description = elem['description']
+        if name is None:
+            continue
+        description = elem['shortDescription']
+        if description is None:
+            description = elem['description']
+
         # release year
         release_year = elem['year']
         # rating: kp and imdb
@@ -108,15 +113,26 @@ def find_serials(mode: str
         return random_dramas(df)
 
     # drama by user's parameters
-    if mode == 'user choose':
+    if mode == 'user choice':
         # reading from config-file
         query = config['default_query_user']
+
+        # additional params
         count_elem = parameters['count']
         del parameters['count']
+        flag_best = parameters['mode'] == 'лучшие'
+        del parameters['mode']
+
         # adding user's parameters
         query['params'].update(parameters)
 
         response = load_data(query)
         df = prepare_data(response['docs'])
-        df.sort_values(['KP rating', 'Release year'], ascending=False, inplace=True, ignore_index=True)
+
+        # filtered by mode
+        if flag_best:
+            df.sort_values(['KP rating', 'Release year'], ascending=False, inplace=True, ignore_index=True)
+        else:
+            # shuffled dataframe
+            df = df.sample(frac=1, ignore_index=True)
         return slice_list_dramas(df, count_elem)

@@ -41,7 +41,7 @@ with open('utils/buttons.json', encoding='utf-8') as handle:
 
 # bot unique token from config-file
 TOKEN = configs['token']
-GENRE, YEAR, COUNTRY, COUNT = range(4)
+GENRE, YEAR, COUNTRY, COUNT, MODE = range(5)
 
 
 # creating database with user's command
@@ -88,6 +88,7 @@ async def user_dramas(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await context.bot.send_message(chat_id=update.effective_chat.id, text=text, parse_mode='Markdown')
 
 
+# USER'S K-DRAMAS -----------------------------------------------------------------------------------------------------
 async def select(update: Update, context: CallbackContext) -> int:
     reply_keyboard = BUTTONS['genres']
     text = messages.select(update.message.from_user.language_code)
@@ -167,17 +168,38 @@ async def country(update: Update, context: CallbackContext) -> int:
     return COUNT
 
 
-async def count(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+async def count(update: Update, context: CallbackContext) -> int:
     user = update.message.from_user
     logger.info("Count of %s: %s", user.first_name, update.message.text)
 
+    reply_keyboard = BUTTONS['modes']
+    text = messages.count(update.message.from_user.language_code)
     commands[update.message.chat.id]['count'] = int(update.message.text)
 
+    await update.message.reply_text(
+        text=text,
+        reply_markup=ReplyKeyboardMarkup(
+            reply_keyboard, one_time_keyboard=True, input_field_placeholder='Mode',
+            resize_keyboard=True
+        ),
+        parse_mode='Markdown'
+    )
+
+    return MODE
+
+
+async def mode(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    user = update.message.from_user
+    logger.info("Mode of %s: %s", user.first_name, update.message.text)
+
+    commands[update.message.chat.id]['mode'] = update.message.text
+
     try:
-        dramas_df = find_serials('user choose', commands[update.message.chat.id])
+        dramas_df = find_serials('user choice', commands[update.message.chat.id])
         text = messages.user_dramas(dramas_df, update.message.from_user.language_code)
-    except Exception as _:
+    except Exception as ex:
         text = messages.user_dramas(None, update.message.from_user.language_code)
+        print(ex)
 
     await update.message.reply_text(text=text, parse_mode='Markdown')
 
@@ -219,8 +241,9 @@ if __name__ == '__main__':
 
     genre_names = "^(мелодрама|драма|комедия|детектив|триллер|история|ужасы|любой)$"
     year_names = "^(2000 - 2024|2008 - 2024|2014 - 2024|2020 - 2024|любой)$"
-    country_names = "^(Корея Южная|Корея Северная|Китай|Япония)$"
+    country_names = "^(Корея Южная|Китай|Япония)$"
     count_names = "^(1|3|5|10)$"
+    mode_names = "^(лучшие|случайные)$"
     conv_handler = ConversationHandler(
         entry_points=[CommandHandler("select", select)],
         states={
@@ -228,6 +251,7 @@ if __name__ == '__main__':
             YEAR: [MessageHandler(filters.Regex(year_names), year)],
             COUNTRY: [MessageHandler(filters.Regex(country_names), country)],
             COUNT: [MessageHandler(filters.Regex(count_names), count)],
+            MODE: [MessageHandler(filters.Regex(mode_names), mode)],
         },
         fallbacks=[CommandHandler("cancel", cancel)],
     )

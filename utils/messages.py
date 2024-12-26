@@ -74,8 +74,8 @@ def user_dramas(dramas_df: pd.DataFrame | None, language: str) -> str:
         , 'en': "Unfortunately I can't find good K-dramas for you by your recommendations..."
     }
     header = {
-        'ru': 'Здесь 5 лучших корейских дорам по твоему запросу:\n'
-        , 'en': 'Here are best K-dramas for your query:\n'
+        'ru': 'Дорамы по твоему запросу:\n'
+        , 'en': 'K-dramas for your query:\n'
     }
 
     if (dramas_df is None) or (len(dramas_df) == 0):
@@ -88,7 +88,7 @@ def user_dramas(dramas_df: pd.DataFrame | None, language: str) -> str:
                 item = f'*{i + 1}.* [{dramas_df[col][i]}]({dramas_df["Link"][i]})'
                 text_items.append(item)
             else:
-                if dramas_df[col][i] != 'None':
+                if not (dramas_df[col][i] is None):
                     item = f'*{COLUMNS[language][j]}*: _{dramas_df[col][i]}_'
                     text_items.append(item)
         text_items.append('')
@@ -127,9 +127,9 @@ def year(language: str) -> str:
 
 def country(language: str) -> str:
     text = {
-        'ru': 'И последний вопрос: сколько дорам мне нужно найти?'
+        'ru': 'Сколько дорам мне нужно найти?'
               '\n_Для прекращения поиска отправь команду_ /cancel.\n'
-        , 'en': 'And the last question: how many K-drams do you want?'
+        , 'en': 'How many K-drams do you want?'
                 '\n_Send the_ /cancel _command to stop._'
     }
     return text[language]
@@ -137,10 +137,18 @@ def country(language: str) -> str:
 
 def count(language: str) -> str:
     text = {
-        'ru': 'Всё записала! Сейчас найду для тебя подходящие дорамы ^-^'
-        , 'en': "Noted! Let's see what I can find for you ^-^"
+        'ru': 'И последний вопрос: ты хочешь получить дорамы с самым высоким рейтингом или просто случайные?'
+        , 'en': "And the last question: do you want to get the highest rated K-dramas or just random ones?"
     }
     return text[language]
+
+
+# def mode(language: str) -> str:
+#     text = {
+#         'ru': 'Всё записала! Сейчас найду для тебя подходящие дорамы ^-^'
+#         , 'en': "Noted! Let's see what I can find for you ^-^"
+#     }
+#     return text[language]
 
 
 def cancel(language: str) -> str:
