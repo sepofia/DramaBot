@@ -26,9 +26,6 @@ with open('database/translate_countries.json', encoding='utf-8') as handle:
     dict_countries = json.load(handle)
 
 
-# TODO #2:
-#  - check the encoding (e.g.: https://www.kinopoisk.ru/series/5229364/)
-
 # QUERY -> DATABASE -> OUTPUT
 def random() -> dict:
     # create database session

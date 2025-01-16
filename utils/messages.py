@@ -106,7 +106,6 @@ def select(language: str) -> str:
 
 
 def genre(language: str) -> str:
-    # TODO: change the message - "select the minimum year" or in some similar way
     text = {
         'ru': 'Запомнила! Теперь укажи минимальную оценку Кинопоиска:'
               '\n_Для прекращения поиска отправь команду_ /cancel.\n'

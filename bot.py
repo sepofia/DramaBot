@@ -246,7 +246,7 @@ if __name__ == '__main__':
         entry_points=[CommandHandler("select", select)],
         states={
             GENRE: [MessageHandler(filters.Regex(genre_names), genre)],
-            RATING : [MessageHandler(filters.Regex(rating_names), rating)],
+            RATING: [MessageHandler(filters.Regex(rating_names), rating)],
             YEAR: [MessageHandler(filters.Regex(year_names), year)],
             COUNTRY: [MessageHandler(filters.Regex(country_names), country)],
             COUNT: [MessageHandler(filters.Regex(count_names), count)],
