@@ -6,7 +6,6 @@
 
 import logging
 
-import pandas as pd
 import yaml
 import json
 from telegram import Update, ReplyKeyboardMarkup, ReplyKeyboardRemove
@@ -20,7 +19,7 @@ from telegram.ext import (
     , filters
 )
 
-from server import find_serials
+from server_sql import find_serials
 from utils import messages, database
 
 
@@ -95,8 +94,7 @@ async def genre(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
 
     reply_keyboard = BUTTONS['rating']
     text = messages.genre(update.message.from_user.language_code)
-    if update.message.text != 'любой':
-        commands[update.message.chat.id]['genres.name'] = update.message.text
+    commands[update.message.chat.id]['genres.name'] = update.message.text
 
     await update.message.reply_text(
         text=text,
@@ -116,8 +114,7 @@ async def rating(update: Update, context: CallbackContext) -> int:
 
     reply_keyboard = BUTTONS['years']
     text = messages.rating(update.message.from_user.language_code)
-    if update.message.text != 'любая':
-        commands[update.message.chat.id]['rating.kp'] = update.message.text
+    commands[update.message.chat.id]['rating.kp'] = update.message.text
 
     await update.message.reply_text(
         text=text,
@@ -137,8 +134,7 @@ async def year(update: Update, context: CallbackContext) -> int:
 
     reply_keyboard = BUTTONS['countries']
     text = messages.year(update.message.from_user.language_code)
-    if update.message.text != 'любой':
-        commands[update.message.chat.id]['year'] = update.message.text.replace(' ', '')
+    commands[update.message.chat.id]['year'] = update.message.text
 
     await update.message.reply_text(
         text=text,
@@ -242,7 +238,7 @@ if __name__ == '__main__':
 
     genre_names = "^(мелодрама|драма|комедия|детектив|триллер|история|ужасы|любой)$"
     rating_names = "^(6|7|8|любая)$"
-    year_names = "^(2000 - 2024|2008 - 2024|2014 - 2024|2020 - 2024|любой)$"
+    year_names = "^(2000|2008|2014|2020|любой)$"
     country_names = "^(Корея Южная|Китай|Япония)$"
     count_names = "^(1|3|5|10)$"
     mode_names = "^(лучшие|случайные)$"

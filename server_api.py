@@ -8,10 +8,14 @@
 """
 
 
+from datetime import date
 import yaml
 import requests
 import pandas as pd
 from random import randrange
+
+
+TODAY_YEAR = date.today().year
 
 
 with open('configuration/config_server.yaml', 'r') as handle:
@@ -122,6 +126,16 @@ def find_serials(mode: str
         del parameters['count']
         flag_best = parameters['mode'] == 'лучшие'
         del parameters['mode']
+
+        parameters['year'] += f'-{TODAY_YEAR}'
+        parameters['rating.kp'] += '-10'
+
+        if parameters['year'].startswith('люб'):
+            del parameters['year']
+        if parameters['rating.kp'].startswith('люб'):
+            del parameters['rating.kp']
+        if parameters['genres.name'].startswith('люб'):
+            del parameters['genres.name']
 
         # adding user's parameters
         query['params'].update(parameters)

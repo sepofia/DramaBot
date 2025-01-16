@@ -118,9 +118,9 @@ def genre(language: str) -> str:
 
 def rating(language: str) -> str:
     text = {
-        'ru': 'Запомнила! Теперь укажи год производства:'
+        'ru': 'Запомнила! Теперь укажи минимальный год производства:'
               '\n_Для прекращения поиска отправь команду_ /cancel.\n'
-        , 'en': 'Memorize! Now select a production year:'
+        , 'en': 'Memorize! Now select a minimum production year:'
                 '\n_Send the_ /cancel _command to stop._'
     }
     return text[language]

@@ -1,5 +1,5 @@
 """
-- do something
+TODO: add description
 """
 
 
@@ -15,14 +15,14 @@ from contextlib import closing
 with open('configuration/config_server.yaml', 'r') as handle:
     config = yaml.full_load(handle)
 
-with open('database/translate_countries.json', encoding='utf-8') as handle:
-    dict_countries = json.load(handle)
+with open('configuration/config_database.yaml', 'r') as handle:
+    configs = yaml.full_load(handle)
 
 with open('database/translate_genres.json', encoding='utf-8') as handle:
     dict_genres = json.load(handle)
 
-with open('configuration/config_database.yaml', 'r') as handle:
-    configs = yaml.full_load(handle)
+with open('database/translate_countries.json', encoding='utf-8') as handle:
+    dict_countries = json.load(handle)
 
 
 def load_from_api_by_query(query: dict) -> dict:
