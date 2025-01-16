@@ -5,7 +5,6 @@
 
 
 import logging
-# from collections import defaultdict
 
 import pandas as pd
 import yaml
@@ -20,8 +19,8 @@ from telegram.ext import (
     , MessageHandler
     , filters
 )
-from server import find_serials
 
+from server import find_serials
 from utils import messages, database
 
 
@@ -41,7 +40,7 @@ with open('utils/buttons.json', encoding='utf-8') as handle:
 
 # bot unique token from config-file
 TOKEN = configs['token']
-GENRE, YEAR, COUNTRY, COUNT, MODE = range(5)
+GENRE, RATING, YEAR, COUNTRY, COUNT, MODE = range(6)
 
 
 # creating database with user's command
@@ -60,31 +59,15 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await context.bot.send_message(chat_id=update.effective_chat.id, text=text)
 
 
-async def random_drama(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def random(update: Update, context: ContextTypes.DEFAULT_TYPE):
     drama = find_serials('random')
     text = messages.random_drama(drama, update.message.from_user.language_code)
     await context.bot.send_message(chat_id=update.effective_chat.id, text=text, parse_mode='Markdown')
 
 
-async def last_dramas(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def last(update: Update, context: ContextTypes.DEFAULT_TYPE):
     dramas_df = find_serials('last')
     text = messages.last_dramas(dramas_df, update.message.from_user.language_code)
-    await context.bot.send_message(chat_id=update.effective_chat.id, text=text, parse_mode='Markdown')
-
-
-async def user_dramas(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    user_message = update.message.text
-    user_message = user_message.replace('/user_dramas', '')
-    user_message = user_message.split()
-    user_params = {}
-    for i in range(0, len(user_message) - 1, 2):
-        user_params[user_message[i].replace(' ', '')] = user_message[i + 1].replace(' ', '')
-
-    try:
-        dramas_df = find_serials('user choose', user_params)
-        text = messages.user_dramas(dramas_df, update.message.from_user.language_code)
-    except Exception as _:
-        text = messages.user_dramas(None, update.message.from_user.language_code)
     await context.bot.send_message(chat_id=update.effective_chat.id, text=text, parse_mode='Markdown')
 
 
@@ -110,10 +93,31 @@ async def genre(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     user = update.message.from_user
     logger.info("Genre of %s: %s", user.first_name, update.message.text)
 
-    reply_keyboard = BUTTONS['years']
+    reply_keyboard = BUTTONS['rating']
     text = messages.genre(update.message.from_user.language_code)
     if update.message.text != 'любой':
         commands[update.message.chat.id]['genres.name'] = update.message.text
+
+    await update.message.reply_text(
+        text=text,
+        reply_markup=ReplyKeyboardMarkup(
+            reply_keyboard, one_time_keyboard=True, input_field_placeholder='Rating',
+            resize_keyboard=True
+        ),
+        parse_mode='Markdown'
+    )
+
+    return RATING
+
+
+async def rating(update: Update, context: CallbackContext) -> int:
+    user = update.message.from_user
+    logger.info("Rating of %s: %s", user.first_name, update.message.text)
+
+    reply_keyboard = BUTTONS['years']
+    text = messages.rating(update.message.from_user.language_code)
+    if update.message.text != 'любая':
+        commands[update.message.chat.id]['rating.kp'] = update.message.text
 
     await update.message.reply_text(
         text=text,
@@ -230,16 +234,14 @@ if __name__ == '__main__':
     start_handler = CommandHandler('start', start)
     application.add_handler(start_handler)
 
-    last_dramas_handler = CommandHandler('last_dramas', last_dramas)
-    application.add_handler(last_dramas_handler)
+    last_handler = CommandHandler('last', last)
+    application.add_handler(last_handler)
 
-    random_drama_handler = CommandHandler('random_drama', random_drama)
-    application.add_handler(random_drama_handler)
-
-    user_dramas_handler = CommandHandler('user_dramas', user_dramas)
-    application.add_handler(user_dramas_handler)
+    random_handler = CommandHandler('random', random)
+    application.add_handler(random_handler)
 
     genre_names = "^(мелодрама|драма|комедия|детектив|триллер|история|ужасы|любой)$"
+    rating_names = "^(6|7|8|любая)$"
     year_names = "^(2000 - 2024|2008 - 2024|2014 - 2024|2020 - 2024|любой)$"
     country_names = "^(Корея Южная|Китай|Япония)$"
     count_names = "^(1|3|5|10)$"
@@ -248,6 +250,7 @@ if __name__ == '__main__':
         entry_points=[CommandHandler("select", select)],
         states={
             GENRE: [MessageHandler(filters.Regex(genre_names), genre)],
+            RATING : [MessageHandler(filters.Regex(rating_names), rating)],
             YEAR: [MessageHandler(filters.Regex(year_names), year)],
             COUNTRY: [MessageHandler(filters.Regex(country_names), country)],
             COUNT: [MessageHandler(filters.Regex(count_names), count)],

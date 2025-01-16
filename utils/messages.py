@@ -70,7 +70,7 @@ def last_dramas(dramas_df: pd.DataFrame, language: str) -> str:
 def user_dramas(dramas_df: pd.DataFrame | None, language: str) -> str:
 
     unsuccessful = {
-        'ru': 'К сожалению, я не смогла найти подходящую дораму по твоим рекомендациям...6'
+        'ru': 'К сожалению, я не смогла найти подходящую дораму по твоим рекомендациям...'
         , 'en': "Unfortunately I can't find good K-dramas for you by your recommendations..."
     }
     header = {
@@ -106,6 +106,17 @@ def select(language: str) -> str:
 
 
 def genre(language: str) -> str:
+    # TODO: change the message - "select the minimum year" or in some similar way
+    text = {
+        'ru': 'Запомнила! Теперь укажи минимальную оценку Кинопоиска:'
+              '\n_Для прекращения поиска отправь команду_ /cancel.\n'
+        , 'en': 'Memorize! Now select a minimum Kinopoist rating:'
+                '\n_Send the_ /cancel _command to stop._'
+    }
+    return text[language]
+
+
+def rating(language: str) -> str:
     text = {
         'ru': 'Запомнила! Теперь укажи год производства:'
               '\n_Для прекращения поиска отправь команду_ /cancel.\n'
