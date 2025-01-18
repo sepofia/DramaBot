@@ -5,7 +5,8 @@
 
 import pandas as pd
 
-filepath = 'C:/Users/пк/Documents/repositories/DoramaBot/database/users.csv'
+# filepath = 'C:/Users/пк/Documents/repositories/DoramaBot/database/users.csv'
+filepath = ''
 
 
 def load_database() -> pd.DataFrame:

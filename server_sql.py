@@ -8,7 +8,7 @@
 
 import pandas as pd
 
-import database_queries as dq
+from database import database_queries as dq
 
 
 def find_serials(mode: str
@@ -29,7 +29,6 @@ def find_serials(mode: str
     if mode == 'user choice':
         answer = dq.select(
             usr_genre=parameters['genres.name']
-            , usr_rating=parameters['rating.kp']
             , usr_country=parameters['countries.name']
             , usr_year=parameters['year']
             , usr_count=parameters['count']

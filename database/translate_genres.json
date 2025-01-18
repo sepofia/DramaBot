@@ -1,0 +1,36 @@
+{
+  "en-ru": {
+    "biography": "биография",
+    "action_movie": "боевик",
+    "military": "военный",
+    "detective": "детектив",
+    "drama": "драма",
+    "history": "история",
+    "comedy": "комедия",
+    "criminal": "криминал",
+    "melodrama": "мелодрама",
+    "music": "музыка",
+    "adventures": "приключения",
+    "thriller": "триллер",
+    "horrors": "ужасы",
+    "fantastic": "фантастика",
+    "fantasy": "фэнтези"
+  },
+  "ru-en": {
+    "биография": "biography",
+    "боевик": "action_movie",
+    "военный": "military",
+    "детектив": "detective",
+    "драма": "drama",
+    "история": "history",
+    "комедия": "comedy",
+    "криминал": "criminal",
+    "мелодрама": "melodrama",
+    "музыка": "music",
+    "приключения": "adventures",
+    "триллер": "thriller",
+    "ужасы": "horrors",
+    "фантастика": "fantastic",
+    "фэнтези": "fantasy"
+  }
+}

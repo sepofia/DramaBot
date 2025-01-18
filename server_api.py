@@ -18,7 +18,7 @@ from random import randrange
 TODAY_YEAR = date.today().year
 
 
-with open('configuration/config_server.yaml', 'r') as handle:
+with open('configuration/config_server_api.yaml', 'r') as handle:
     config = yaml.full_load(handle)
 
 
@@ -128,12 +128,9 @@ def find_serials(mode: str
         del parameters['mode']
 
         parameters['year'] += f'-{TODAY_YEAR}'
-        parameters['rating.kp'] += '-10'
 
         if parameters['year'].startswith('люб'):
             del parameters['year']
-        if parameters['rating.kp'].startswith('люб'):
-            del parameters['rating.kp']
         if parameters['genres.name'].startswith('люб'):
             del parameters['genres.name']
 

@@ -1,12 +1,10 @@
 """
-it might be reasonable to add choosing language:
-- in the separate function with the global LANGUAGE parameter for this file
-- create dictionary with the same phrases in the different languages
+Here is bot messages dictionary with the same phrases in the different languages
 """
 
 import pandas as pd
 
-# TODO: move to the json-file
+
 COLUMNS = {
     'ru': ['Название', 'Описание', 'Рейтинг Кинопоиска', 'Жанры', 'Страна']
     , 'en': ['Name', 'Description', 'KP rating', 'Genres', 'Country']
@@ -106,16 +104,6 @@ def select(language: str) -> str:
 
 
 def genre(language: str) -> str:
-    text = {
-        'ru': 'Запомнила! Теперь укажи минимальную оценку Кинопоиска:'
-              '\n_Для прекращения поиска отправь команду_ /cancel.\n'
-        , 'en': 'Memorize! Now select a minimum Kinopoist rating:'
-                '\n_Send the_ /cancel _command to stop._'
-    }
-    return text[language]
-
-
-def rating(language: str) -> str:
     text = {
         'ru': 'Запомнила! Теперь укажи минимальный год производства:'
               '\n_Для прекращения поиска отправь команду_ /cancel.\n'

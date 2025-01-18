@@ -12,17 +12,14 @@ from contextlib import closing
 
 
 # load configurate files
-with open('configuration/config_server.yaml', 'r') as handle:
-    config = yaml.full_load(handle)
-
-with open('configuration/config_database.yaml', 'r') as handle:
+with open('../configuration/config_database.yaml', 'r') as handle:
     configs = yaml.full_load(handle)
 
 # load files with translated inscriptions
-with open('database/translate_genres.json', encoding='utf-8') as handle:
+with open('translate_genres.json', encoding='utf-8') as handle:
     dict_genres = json.load(handle)
 
-with open('database/translate_countries.json', encoding='utf-8') as handle:
+with open('translate_countries.json', encoding='utf-8') as handle:
     dict_countries = json.load(handle)
 
 
@@ -82,7 +79,7 @@ def last() -> list[dict]:
 
 
 def select(
-        usr_genre: str, usr_rating: str, usr_country: str, usr_year: str, usr_count: str
+        usr_genre: str, usr_country: str, usr_year: str, usr_count: str
         , usr_mode: str  # best or random
 ) -> list[dict]:
     # formulate conditions
@@ -90,10 +87,6 @@ def select(
     if usr_genre != 'любой':
         genre = dict_genres['ru-en'][usr_genre]
         condition_genre = f' AND g.{genre} = TRUE '
-
-    condition_rating = ''
-    if usr_rating != 'любая':
-        condition_rating = f' AND t.kp_rating >= {usr_rating} '
 
     condition_year = ''
     if usr_year != 'любой':
@@ -111,8 +104,8 @@ def select(
                 FROM tv_series AS t 
                 JOIN countries c ON t.id = c.id 
                 JOIN genres AS g ON t.id = g.id 
-                WHERE c.{country_column} = TRUE 
-                {condition_genre} {condition_year} {condition_rating} 
+                WHERE c.{country_column} = TRUE AND t.kp_rating >= 7 
+                {condition_genre} {condition_year}
                 {condition_order} 
                 LIMIT {count};
             """

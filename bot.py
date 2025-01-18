@@ -39,7 +39,7 @@ with open('utils/buttons.json', encoding='utf-8') as handle:
 
 # bot unique token from config-file
 TOKEN = configs['token']
-GENRE, RATING, YEAR, COUNTRY, COUNT, MODE = range(6)
+GENRE, YEAR, COUNTRY, COUNT, MODE = range(5)
 
 
 # creating database with user's command
@@ -92,29 +92,9 @@ async def genre(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     user = update.message.from_user
     logger.info("Genre of %s: %s", user.first_name, update.message.text)
 
-    reply_keyboard = BUTTONS['rating']
+    reply_keyboard = BUTTONS['years']
     text = messages.genre(update.message.from_user.language_code)
     commands[update.message.chat.id]['genres.name'] = update.message.text
-
-    await update.message.reply_text(
-        text=text,
-        reply_markup=ReplyKeyboardMarkup(
-            reply_keyboard, one_time_keyboard=True, input_field_placeholder='Rating',
-            resize_keyboard=True
-        ),
-        parse_mode='Markdown'
-    )
-
-    return RATING
-
-
-async def rating(update: Update, context: CallbackContext) -> int:
-    user = update.message.from_user
-    logger.info("Rating of %s: %s", user.first_name, update.message.text)
-
-    reply_keyboard = BUTTONS['years']
-    text = messages.rating(update.message.from_user.language_code)
-    commands[update.message.chat.id]['rating.kp'] = update.message.text
 
     await update.message.reply_text(
         text=text,
@@ -237,7 +217,6 @@ if __name__ == '__main__':
     application.add_handler(random_handler)
 
     genre_names = "^(мелодрама|драма|комедия|детектив|триллер|история|ужасы|любой)$"
-    rating_names = "^(6|7|8|любая)$"
     year_names = "^(2000|2008|2014|2020|любой)$"
     country_names = "^(Корея Южная|Китай|Япония)$"
     count_names = "^(1|3|5|10)$"
@@ -246,7 +225,6 @@ if __name__ == '__main__':
         entry_points=[CommandHandler("select", select)],
         states={
             GENRE: [MessageHandler(filters.Regex(genre_names), genre)],
-            RATING: [MessageHandler(filters.Regex(rating_names), rating)],
             YEAR: [MessageHandler(filters.Regex(year_names), year)],
             COUNTRY: [MessageHandler(filters.Regex(country_names), country)],
             COUNT: [MessageHandler(filters.Regex(count_names), count)],
