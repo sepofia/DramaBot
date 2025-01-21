@@ -12,14 +12,14 @@ from contextlib import closing
 
 
 # load configurate files
-with open('../configuration/config_database.yaml', 'r') as handle:
+with open('C:/Users/пк/Documents/repositories/DoramaBot/configuration/config_database.yaml', 'r') as handle:
     configs = yaml.full_load(handle)
 
 # load files with translated inscriptions
-with open('translate_genres.json', encoding='utf-8') as handle:
+with open('C:/Users/пк/Documents/repositories/DoramaBot/database/translate_genres.json', encoding='utf-8') as handle:
     dict_genres = json.load(handle)
 
-with open('translate_countries.json', encoding='utf-8') as handle:
+with open('C:/Users/пк/Documents/repositories/DoramaBot/database/translate_countries.json', encoding='utf-8') as handle:
     dict_countries = json.load(handle)
 
 

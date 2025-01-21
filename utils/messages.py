@@ -14,12 +14,9 @@ COLUMNS = {
 def start(name: str, language: str) -> str:
     if language == 'en':
         return f'Hi {name}! Nice to see you here! \nWelcome to the world of K-dramas 🤍'
-    if language == 'ru':
+    # if language == 'ru':
+    else:
         return f'Привет, {name}, рада видеть тебя здесь! \nДобро пожаловать в мир дорам 🤍'
-
-
-def help_message():
-    pass
 
 
 def random_drama(drama: pd.DataFrame | pd.Series, language: str) -> str:
@@ -27,6 +24,8 @@ def random_drama(drama: pd.DataFrame | pd.Series, language: str) -> str:
         'ru': 'Здесь твоя случайная дорама не старше 2016 года и с рейтингом кинопоиска выше 7.1:\n'
         , 'en': 'Here is your random K-drama from 2016 to 2024 and with a kinopoisk rating of over 7.1:\n'
     }
+    if language not in ['ru', 'en']:
+        language = 'ru'
     text_items = [header[language]]
     for j, col in enumerate(COLUMNS['en']):
         if col == 'Name':
@@ -47,6 +46,9 @@ def last_dramas(dramas_df: pd.DataFrame, language: str) -> str:
         'ru': 'К сожалению, я не смогла найти подходящую дораму для тебя, но я ещё учусь 🥺'
         , 'en': "Unfortunately I can't find a good K-drama for you now, but I'm still learning 🥺"
     }
+
+    if language not in ['ru', 'en']:
+        language = 'ru'
 
     if len(dramas_df) == 0:
         return unsuccessful[language]
@@ -76,6 +78,9 @@ def user_dramas(dramas_df: pd.DataFrame | None, language: str) -> str:
         , 'en': 'K-dramas for your query:\n'
     }
 
+    if language not in ['ru', 'en']:
+        language = 'ru'
+
     if (dramas_df is None) or (len(dramas_df) == 0):
         return unsuccessful[language]
 
@@ -100,6 +105,9 @@ def select(language: str) -> str:
         , 'en': "Let's choose K-dramas especially for you! First, choose a genre:"
                 "\n_Send the_ /cancel _command to stop._"
     }
+    if language not in ['ru', 'en']:
+        language = 'ru'
+
     return text[language]
 
 
@@ -110,6 +118,9 @@ def genre(language: str) -> str:
         , 'en': 'Memorize! Now select a minimum production year:'
                 '\n_Send the_ /cancel _command to stop._'
     }
+    if language not in ['ru', 'en']:
+        language = 'ru'
+
     return text[language]
 
 
@@ -120,6 +131,9 @@ def year(language: str) -> str:
         , 'en': 'Great! Then specify the county:'
                 '\n_Send the_ /cancel _command to stop._'
     }
+    if language not in ['ru', 'en']:
+        language = 'ru'
+
     return text[language]
 
 
@@ -130,6 +144,9 @@ def country(language: str) -> str:
         , 'en': 'How many K-drams do you want?'
                 '\n_Send the_ /cancel _command to stop._'
     }
+    if language not in ['ru', 'en']:
+        language = 'ru'
+
     return text[language]
 
 
@@ -138,15 +155,10 @@ def count(language: str) -> str:
         'ru': 'И последний вопрос: ты хочешь получить дорамы с самым высоким рейтингом или просто случайные?'
         , 'en': "And the last question: do you want to get the highest rated K-dramas or just random ones?"
     }
+    if language not in ['ru', 'en']:
+        language = 'ru'
+
     return text[language]
-
-
-# def mode(language: str) -> str:
-#     text = {
-#         'ru': 'Всё записала! Сейчас найду для тебя подходящие дорамы ^-^'
-#         , 'en': "Noted! Let's see what I can find for you ^-^"
-#     }
-#     return text[language]
 
 
 def cancel(language: str) -> str:
@@ -154,4 +166,7 @@ def cancel(language: str) -> str:
         'ru': 'Не вопрос ;) \nВыберем дорамы для тебя как-нибудь в другой раз!'
         , 'en': "Ok! We can choose K-dramas for you at any time ;)"
     }
+    if language not in ['ru', 'en']:
+        language = 'ru'
+
     return text[language]

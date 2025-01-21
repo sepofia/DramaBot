@@ -8,7 +8,7 @@
 
 import pandas as pd
 
-from database import database_queries as dq
+from database import queries as dq
 
 
 def find_serials(mode: str

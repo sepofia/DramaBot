@@ -19,8 +19,10 @@ from telegram.ext import (
     , filters
 )
 
+from datetime import datetime as dt
 from server_sql import find_serials
-from utils import messages, database
+from utils import messages
+from database import update_users
 
 
 # logging
@@ -41,32 +43,63 @@ with open('utils/buttons.json', encoding='utf-8') as handle:
 TOKEN = configs['token']
 GENRE, YEAR, COUNTRY, COUNT, MODE = range(5)
 
-
-# creating database with user's command
-# save after every full query
+# load already existed users
+all_users = update_users.load_user_id()
 commands = {}
 
 
 # bot actions
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    user = {'id': update.message.chat.id
-            , 'name': update.message.chat.first_name
-            , 'language': update.message.from_user.language_code}
-    database.check_user(user)
+    user = (
+        update.message.from_user.id
+        , update.message.from_user.username
+        , update.message.from_user.first_name
+        , update.message.from_user.language_code
+        , update.message.from_user.is_premium
+        , update.message.from_user.is_bot
+    )
 
-    text = messages.start(user['name'], user['language'])
+    if user[0] not in all_users:  # add user in local database
+        all_users.add(user[0])
+        update_users.update_users_database(user)
+
+    new_command = (
+        update.message.from_user.id
+        , 'start'
+        , dt.now()
+        , None
+    )
+    update_users.update_command_database(new_command)
+
+    text = messages.start(user[2], user[3])
     await context.bot.send_message(chat_id=update.effective_chat.id, text=text)
 
 
 async def random(update: Update, context: ContextTypes.DEFAULT_TYPE):
     drama = find_serials('random')
     text = messages.random_drama(drama, update.message.from_user.language_code)
+
+    new_command = (
+        update.message.from_user.id
+        , 'random'
+        , dt.now()
+        , None
+    )
+    update_users.update_command_database(new_command)
     await context.bot.send_message(chat_id=update.effective_chat.id, text=text, parse_mode='Markdown')
 
 
 async def last(update: Update, context: ContextTypes.DEFAULT_TYPE):
     dramas_df = find_serials('last')
     text = messages.last_dramas(dramas_df, update.message.from_user.language_code)
+
+    new_command = (
+        update.message.from_user.id
+        , 'last'
+        , dt.now()
+        , None
+    )
+    update_users.update_command_database(new_command)
     await context.bot.send_message(chat_id=update.effective_chat.id, text=text, parse_mode='Markdown')
 
 
@@ -177,9 +210,17 @@ async def mode(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     try:
         dramas_df = find_serials('user choice', commands[update.message.chat.id])
         text = messages.user_dramas(dramas_df, update.message.from_user.language_code)
+
+        new_command = (
+            update.message.from_user.id
+            , 'select'
+            , dt.now()
+            , ', '.join(map(str, commands[update.message.chat.id].values()))
+        )
+        update_users.update_command_database(new_command)
     except Exception as ex:
         text = messages.user_dramas(None, update.message.from_user.language_code)
-        print(ex)
+        logger.warning(ex)
 
     await update.message.reply_text(text=text, parse_mode='Markdown')
 
@@ -192,6 +233,13 @@ async def cancel(update: Update, context: CallbackContext) -> int:
 
     text = messages.cancel(update.message.from_user.language_code)
     del commands[update.message.chat.id]
+    new_command = (
+        update.message.from_user.id
+        , 'cancel'
+        , dt.now()
+        , None
+    )
+    update_users.update_command_database(new_command)
 
     await update.message.reply_text(text=text, reply_markup=ReplyKeyboardRemove())
     return ConversationHandler.END

@@ -46,3 +46,25 @@ CREATE TABLE genres
 );
 
 -- DROP TABLE genres;
+
+CREATE TABLE users
+(
+    id              INTEGER PRIMARY KEY,
+    language_code   VARCHAR(50),
+    is_premium      BOOLEAN,
+    is_bot          BOOLEAN
+);
+
+-- DROP TABLE users;
+
+CREATE TABLE commands
+(
+    id INTEGER PRIMARY KEY,
+    user_id INTEGER,
+    FOREIGN KEY (user_id) REFERENCES users(id),
+    command_type VARCHAR(100),
+    date_time TIMESTAMP,
+    parameters VARCHAR(500) DEFAULT NULL
+);
+
+-- DROP TABLE commands;
