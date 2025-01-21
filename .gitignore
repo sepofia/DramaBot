@@ -6,4 +6,7 @@ __pycache__/
 /configuration/
 
 # Ignore the help-files
-supporting_files/
+/supporting_files/
+
+# Ignore the log-files
+/logs/

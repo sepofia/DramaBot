@@ -4,10 +4,14 @@ Here is bot messages dictionary with the same phrases in the different languages
 
 import pandas as pd
 
-
 COLUMNS = {
     'ru': ['Название', 'Описание', 'Рейтинг Кинопоиска', 'Жанры', 'Страна']
     , 'en': ['Name', 'Description', 'KP rating', 'Genres', 'Country']
+}
+
+UNSUCCESSFUL_MESSAGE = {
+    'ru': 'К сожалению, я не смогла найти подходящую дораму для тебя, но я ещё учусь 🥺'
+    , 'en': "Unfortunately I can't find a good K-drama for you now, but I'm still learning 🥺"
 }
 
 
@@ -21,8 +25,8 @@ def start(name: str, language: str) -> str:
 
 def random_drama(drama: pd.DataFrame | pd.Series, language: str) -> str:
     header = {
-        'ru': 'Здесь твоя случайная дорама не старше 2016 года и с рейтингом кинопоиска выше 7.1:\n'
-        , 'en': 'Here is your random K-drama from 2016 to 2024 and with a kinopoisk rating of over 7.1:\n'
+        'ru': 'Здесь твоя случайная дорама:\n'
+        , 'en': 'Here is your random K-drama:\n'
     }
     if language not in ['ru', 'en']:
         language = 'ru'
@@ -39,19 +43,15 @@ def random_drama(drama: pd.DataFrame | pd.Series, language: str) -> str:
 
 def last_dramas(dramas_df: pd.DataFrame, language: str) -> str:
     header = {
-        'ru': 'Здесь 5 лучших корейских дорам за последние 2 года по рейтингу Кинопоиска:\n'
+        'ru': 'Здесь 5 лучших корейских дорам из недавно выпущенных по рейтингу Кинопоиска:\n'
         , 'en': 'Here are 5 best last K-dramas by Kinopoisk rating:\n'
-    }
-    unsuccessful = {
-        'ru': 'К сожалению, я не смогла найти подходящую дораму для тебя, но я ещё учусь 🥺'
-        , 'en': "Unfortunately I can't find a good K-drama for you now, but I'm still learning 🥺"
     }
 
     if language not in ['ru', 'en']:
         language = 'ru'
 
     if len(dramas_df) == 0:
-        return unsuccessful[language]
+        return UNSUCCESSFUL_MESSAGE[language]
 
     text_items = [header[language]]
     for i in range(len(dramas_df)):
@@ -68,7 +68,6 @@ def last_dramas(dramas_df: pd.DataFrame, language: str) -> str:
 
 
 def user_dramas(dramas_df: pd.DataFrame | None, language: str) -> str:
-
     unsuccessful = {
         'ru': 'К сожалению, я не смогла найти подходящую дораму по твоим рекомендациям...'
         , 'en': "Unfortunately I can't find good K-dramas for you by your recommendations..."

@@ -13,25 +13,34 @@ from psycopg2.extras import DictCursor
 from contextlib import closing
 
 
-# logging
-logging.basicConfig(
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    level=logging.INFO
-)
-logger = logging.getLogger(__name__)
-
-
 with open('../configuration/config_server_api.yaml', 'r') as handle:
     config = yaml.full_load(handle)
 
 with open('../configuration/config_database.yaml', 'r') as handle:
     configs = yaml.full_load(handle)
 
+with open('../configuration/config_logger.yaml', 'r') as handle:
+    logger_config = yaml.full_load(handle)
+
 with open('translate_genres.json', encoding='utf-8') as handle:
     dict_genres = json.load(handle)
 
 with open('translate_countries.json', encoding='utf-8') as handle:
     dict_countries = json.load(handle)
+
+
+# logging
+log_filename = logger_config['series_logging']
+
+with open(log_filename, 'a') as handle:
+    handle.write('\n\n -- NEW SESSION -- \n')
+
+logging.basicConfig(
+    filename=log_filename
+    , format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    , level=logging.INFO
+)
+logger = logging.getLogger(__name__)
 
 
 def load_old_data() -> set:
