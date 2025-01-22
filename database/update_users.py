@@ -1,7 +1,7 @@
 """
 TODO: tell us your story...
 """
-
+import datetime
 
 import yaml
 import logging
@@ -54,16 +54,41 @@ def update_users_database(value: tuple) -> None:
             logger.info(f'User {value[0]} added in the local database')
 
 
-def update_command_database(value: tuple):
+def update_command_database(value: tuple, parameters: tuple=()):
     with closing(psycopg2.connect(**configs)) as conn:
         with conn.cursor() as cursor:
             conn.autocommit = True
 
-            # The query now uses `sql.Identifier` to safely reference the column names
-            # and `sql.Literal` for the values, making the query both secure and correct.
+            # write the command in the `commands` table
             value_sql = sql.SQL(',').join(map(sql.Literal, value))
-            insert = sql.SQL('INSERT INTO commands (user_id, command_type, date_time, parameters) VALUES ({});')\
-                .format(value_sql)
+            insert = sql.SQL(
+                'INSERT INTO commands (user_id, command_type, date_time) VALUES ({});'
+            ).format(value_sql)
 
             cursor.execute(insert)
             logger.info(f'Command {value[1]} from user {value[0]} added in the database')
+
+    # if the command is `select` - insert parameters in the `commands_select` table
+    if value[1] == 'select':
+        # put the command_id from the `commands` table
+        with closing(psycopg2.connect(**configs)) as conn:
+            with conn.cursor() as cursor:
+                conn.autocommit = True
+
+                query = f'''
+                SELECT id FROM commands 
+                WHERE user_id = {value[0]} 
+                ORDER BY date_time DESC 
+                LIMIT 1;
+                '''
+                cursor.execute(query)
+                command_id = cursor.fetchall()[0][0]
+
+                parameters_sql = sql.SQL(',').join(map(sql.Literal, (command_id, *parameters)))
+                insert = sql.SQL(
+                    'INSERT INTO commands_select (command_id, genre, min_year, country, count, answer_mode) '
+                    'VALUES ({});'
+                ).format(parameters_sql)
+
+                cursor.execute(insert)
+                logger.info(f'Parameters command `select` {command_id} added in the database')

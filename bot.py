@@ -67,7 +67,6 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         update.message.from_user.id
         , 'start'
         , dt.now()
-        , None
     )
     update_users.update_command_database(new_command)
 
@@ -83,7 +82,6 @@ async def random(update: Update, context: ContextTypes.DEFAULT_TYPE):
         update.message.from_user.id
         , 'random'
         , dt.now()
-        , None
     )
     update_users.update_command_database(new_command)
     await context.bot.send_message(chat_id=update.effective_chat.id, text=text, parse_mode='Markdown')
@@ -97,7 +95,6 @@ async def last(update: Update, context: ContextTypes.DEFAULT_TYPE):
         update.message.from_user.id
         , 'last'
         , dt.now()
-        , None
     )
     update_users.update_command_database(new_command)
     await context.bot.send_message(chat_id=update.effective_chat.id, text=text, parse_mode='Markdown')
@@ -215,9 +212,9 @@ async def mode(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
             update.message.from_user.id
             , 'select'
             , dt.now()
-            , ', '.join(map(str, commands[update.message.chat.id].values()))
         )
-        update_users.update_command_database(new_command)
+        parameters = tuple(commands[update.message.chat.id].values())
+        update_users.update_command_database(new_command, parameters)
     except Exception as ex:
         text = messages.user_dramas(None, update.message.from_user.language_code)
         logger.warning(ex)
@@ -237,7 +234,6 @@ async def cancel(update: Update, context: CallbackContext) -> int:
         update.message.from_user.id
         , 'cancel'
         , dt.now()
-        , None
     )
     update_users.update_command_database(new_command)
 
