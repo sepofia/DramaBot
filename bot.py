@@ -119,9 +119,6 @@ async def select(update: Update, context: CallbackContext) -> int:
 
 
 async def genre(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    user = update.message.from_user
-    logger.info("Genre of %s: %s", user.first_name, update.message.text)
-
     reply_keyboard = BUTTONS['years']
     text = messages.genre(update.message.from_user.language_code)
     commands[update.message.chat.id]['genres.name'] = update.message.text
@@ -139,9 +136,6 @@ async def genre(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
 
 
 async def year(update: Update, context: CallbackContext) -> int:
-    user = update.message.from_user
-    logger.info("Year of %s: %s", user.first_name, update.message.text)
-
     reply_keyboard = BUTTONS['countries']
     text = messages.year(update.message.from_user.language_code)
     commands[update.message.chat.id]['year'] = update.message.text
@@ -159,9 +153,6 @@ async def year(update: Update, context: CallbackContext) -> int:
 
 
 async def country(update: Update, context: CallbackContext) -> int:
-    user = update.message.from_user
-    logger.info("Country of %s: %s", user.first_name, update.message.text)
-
     reply_keyboard = BUTTONS['counts']
     text = messages.country(update.message.from_user.language_code)
     commands[update.message.chat.id]['countries.name'] = update.message.text
@@ -179,9 +170,6 @@ async def country(update: Update, context: CallbackContext) -> int:
 
 
 async def count(update: Update, context: CallbackContext) -> int:
-    user = update.message.from_user
-    logger.info("Count of %s: %s", user.first_name, update.message.text)
-
     reply_keyboard = BUTTONS['modes']
     text = messages.count(update.message.from_user.language_code)
     commands[update.message.chat.id]['count'] = int(update.message.text)
@@ -199,22 +187,25 @@ async def count(update: Update, context: CallbackContext) -> int:
 
 
 async def mode(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    user = update.message.from_user
-    logger.info("Mode of %s: %s", user.first_name, update.message.text)
-
     commands[update.message.chat.id]['mode'] = update.message.text
-
     try:
         dramas_df = find_serials('user choice', commands[update.message.chat.id])
         text = messages.user_dramas(dramas_df, update.message.from_user.language_code)
-
+        # values for the `commands` table
         new_command = (
             update.message.from_user.id
             , 'select'
             , dt.now()
         )
-        parameters = tuple(commands[update.message.chat.id].values())
-        update_users.update_command_database(new_command, parameters)
+        # parameters for the `commands_select` table
+        parameters = list(commands[update.message.chat.id].values())
+        # check the data type of year
+        if parameters[1].startswith('люб'):
+            parameters[1] = None
+            
+        # update tables
+        update_users.update_command_database(new_command, tuple(parameters))
+
     except Exception as ex:
         text = messages.user_dramas(None, update.message.from_user.language_code)
         logger.warning(ex)
@@ -225,9 +216,6 @@ async def mode(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
 
 
 async def cancel(update: Update, context: CallbackContext) -> int:
-    user = update.message.from_user
-    logger.info("User %s canceled the conversation.", user.first_name)
-
     text = messages.cancel(update.message.from_user.language_code)
     del commands[update.message.chat.id]
     new_command = (
