@@ -33,9 +33,6 @@ While using the library asynchronously, it **can handle multiple updates concurr
 that can be done asynchronously (e.g., I/O tasks, network requests). This allows for better performance, 
 especially when handling many updates or performing long-running tasks.
 
-**<u>Need to check!!</u> To use the asynchronous mode, you'd need to set up your bot with asyncio, 
-and the main bot handler functions need to be defined as async def functions.**
-
 ### Restrictions for the bot messages:
 
  - according to the [Telegram Bot API documentation](https://core.telegram.org/bots/api#updating-messages), 
