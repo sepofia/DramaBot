@@ -1,5 +1,5 @@
 """
-Here is bot messages dictionary with the same phrases in the different languages
+- bot messages dictionary with the same phrases in the different languages
 """
 
 import pandas as pd
@@ -10,17 +10,36 @@ COLUMNS = {
 }
 
 UNSUCCESSFUL_MESSAGE = {
-    'ru': 'К сожалению, я не смогла найти подходящую дораму для тебя, но я ещё учусь 🥺'
-    , 'en': "Unfortunately I can't find a good K-drama for you now, but I'm still learning 🥺"
+    'ru': 'К сожалению, я не смогла найти подходящие дорамы, попробуй чуть попозже 🥺'
+    , 'en': "Unfortunately I can't find a good K-drama for you now, you can try again a little later 🥺"
 }
 
 
 def start(name: str, language: str) -> str:
+    if language not in ['ru', 'en']:
+        language = 'ru'
     if language == 'en':
-        return f'Hi {name}! Nice to see you here! \nWelcome to the world of K-dramas 🤍'
-    # if language == 'ru':
-    else:
-        return f'Привет, {name}, рада видеть тебя здесь! \nДобро пожаловать в мир дорам 🤍'
+        return f"Hello, {name}! 💖 My name is Ji Hyun, and I will help you find the best dramas on Kinopoisk!\n" \
+               f"Do you want romance, drama, or something light and funny? I'll pick the perfect list for you! 😎\n\n" \
+               f"*What I can do:*\n" \
+               f"🔹 /last - I will send links to the 5 best recent dramas;\n" \
+               f"🔹 /random - I 'll send you a link to a random drama;\n" \
+               f"🔹 /select - I will find the dramas according to your request, " \
+               f"taking into account their genre, year and country! 🫶\n\n" \
+               f"💭 If you have any suggestions (I'm really looking forward to it! 🤭), " \
+               f"questions or complaints 🙄, then you can email my developer: @sepofia2.\n\n" \
+               f"Now let's stock up on ramen and enjoy watching! 🍜"
+    if language == 'ru':
+        return f'Привет, {name}! 💖 Меня зовут Джи Хён, и я помогу тебе найти самые лучшие дорамы на Кинопоиске!\n' \
+               f'Хочешь романтики, драмы или что-то лёгкое и смешное? ' \
+               f'Я подберу для тебя идеальный список! 😎\n\n' \
+               f'*Что я умею: * \n' \
+               f'🔹 /last - отправлю ссылки на 5 лучших последних дорам;\n' \
+               f'🔹 /random - пришлю ссылку на случайную дораму;\n' \
+               f'🔹 /select - найду дорамы по твоему запросу, учитывая их жанр, год и страну! 🫶\n\n' \
+               f'💭 Если у тебя возникнут любые пожелания _(очень жду! 🤭)_, вопросы или жалобы 🙄, ' \
+               f'то можешь написать на почту моей разработчице: @sepofia2.\n\n' \
+               f'_Теперь - запасаемся рамёном и наслаждаемся просмотром!_ 🍜'
 
 
 def random_drama(drama: pd.DataFrame | pd.Series, language: str) -> str:
@@ -68,10 +87,6 @@ def last_dramas(dramas_df: pd.DataFrame, language: str) -> str:
 
 
 def user_dramas(dramas_df: pd.DataFrame | None, language: str) -> str:
-    unsuccessful = {
-        'ru': 'К сожалению, я не смогла найти подходящую дораму по твоим рекомендациям...'
-        , 'en': "Unfortunately I can't find good K-dramas for you by your recommendations..."
-    }
     header = {
         'ru': 'Дорамы по твоему запросу:\n'
         , 'en': 'K-dramas for your query:\n'
@@ -81,20 +96,27 @@ def user_dramas(dramas_df: pd.DataFrame | None, language: str) -> str:
         language = 'ru'
 
     if (dramas_df is None) or (len(dramas_df) == 0):
-        return unsuccessful[language]
+        return UNSUCCESSFUL_MESSAGE[language]
 
     text_items = [header[language]]
+    text_items_short = [header[language]]
     for i in range(len(dramas_df)):
         for j, col in enumerate(COLUMNS['en']):
             if col == 'Name':
                 item = f'*{i + 1}.* [{dramas_df[col][i]}]({dramas_df["Link"][i]})'
                 text_items.append(item)
+                text_items_short.append(item)
             else:
                 if not (dramas_df[col][i] is None):
                     item = f'*{COLUMNS[language][j]}*: _{dramas_df[col][i]}_'
                     text_items.append(item)
+                    if col not in ['Description', 'Описание']:
+                        text_items_short.append(item)
         text_items.append('')
-    return '\n'.join(text_items)
+        text_items_short.append('')
+    text = '\n'.join(text_items)
+    text_short = '\n'.join(text_items_short)
+    return text if len(text) < 4096 else text_short
 
 
 def select(language: str) -> str:
@@ -169,3 +191,21 @@ def cancel(language: str) -> str:
         language = 'ru'
 
     return text[language]
+
+
+def incorrect_message(language: str):
+    if language == 'en':
+        text = "Sorry, I don't understand your message 👀 \nTry to use commands from menu"
+    else:
+        text = 'Не совсем понимаю, что ты имеешь в виду 👀 \nПопробуй использовать команды из меню'
+    return text
+
+
+def text_message(context: str, language: str):
+    if 'спасибо' in context.lower():
+        text = 'Рада, что смогла помочь 🫶'
+    elif 'thank' in context.lower():
+        text = "I was happy to help you 🫶"
+    else:
+        return incorrect_message(language)
+    return text

@@ -1,7 +1,10 @@
 """
-TODO: tell us your story...
+- load information about new users
+- load information about users commands
+- load information about users preferences (`/select` command)
+- load information about request status (successful or not)
 """
-import datetime
+
 
 import yaml
 import logging
@@ -25,11 +28,11 @@ with open(log_filename, 'a') as handle:
     handle.write('\n\n -- NEW SESSION -- \n')
 
 logging.basicConfig(
-    filename=log_filename
-    , format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
     , level=logging.INFO
+    , filename=log_filename
 )
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('my_logs')
 
 
 # load already existed items in Database
@@ -62,7 +65,7 @@ def update_command_database(value: tuple, parameters: tuple=()):
             # write the command in the `commands` table
             value_sql = sql.SQL(',').join(map(sql.Literal, value))
             insert = sql.SQL(
-                'INSERT INTO commands (user_id, command_type, date_time) VALUES ({});'
+                'INSERT INTO commands (user_id, command_type, date_time, result) VALUES ({});'
             ).format(value_sql)
 
             cursor.execute(insert)

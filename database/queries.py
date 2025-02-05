@@ -1,6 +1,5 @@
 """
-TODO: add description:
- - QUERY -> DATABASE -> OUTPUT
+- sql-queries for a local database by users commands
 """
 
 
@@ -58,7 +57,7 @@ def last() -> list[dict]:
                            'FROM tv_series AS t '
                            'JOIN countries AS c '
                            'ON t.id = c.id '
-                           'WHERE c.south_korea = TRUE '
+                           'WHERE c.south_korea = TRUE and t.kp_rating >= 7 '
                            'ORDER BY t.production_year DESC, t.kp_rating DESC '
                            'LIMIT 5;')
             answer = []

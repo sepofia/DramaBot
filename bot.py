@@ -1,6 +1,7 @@
 """
-- send actual K-drams by default query
-- ask on the query with user's parameters: genre, year or rate
+- processing users commands and messages
+- receiving datas from the server (API or local database)
+- sending answering messages for users (from the `utils.messages.py` file)
 """
 
 
@@ -28,7 +29,7 @@ from database import update_users
 # logging
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-    , level=logging.INFO
+    , level=logging.WARNING
 )
 logger = logging.getLogger(__name__)
 
@@ -45,6 +46,8 @@ GENRE, YEAR, COUNTRY, COUNT, MODE = range(5)
 
 # load already existed users
 all_users = update_users.load_user_id()
+
+# create a dict for saving users parameters (for the /select command)
 commands = {}
 
 
@@ -67,11 +70,13 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         update.message.from_user.id
         , 'start'
         , dt.now()
+        , True
     )
     update_users.update_command_database(new_command)
 
+    # send a message to the user
     text = messages.start(user[2], user[3])
-    await context.bot.send_message(chat_id=update.effective_chat.id, text=text)
+    await update.message.reply_text(text=text, parse_mode='Markdown', reply_markup=ReplyKeyboardRemove())
 
 
 async def random(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -82,6 +87,7 @@ async def random(update: Update, context: ContextTypes.DEFAULT_TYPE):
         update.message.from_user.id
         , 'random'
         , dt.now()
+        , ord(text[-1]) != 129402
     )
     update_users.update_command_database(new_command)
     await context.bot.send_message(chat_id=update.effective_chat.id, text=text, parse_mode='Markdown')
@@ -95,6 +101,7 @@ async def last(update: Update, context: ContextTypes.DEFAULT_TYPE):
         update.message.from_user.id
         , 'last'
         , dt.now()
+        , ord(text[-1]) != 129402
     )
     update_users.update_command_database(new_command)
     await context.bot.send_message(chat_id=update.effective_chat.id, text=text, parse_mode='Markdown')
@@ -196,13 +203,14 @@ async def mode(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
             update.message.from_user.id
             , 'select'
             , dt.now()
+            , ord(text[-1]) != 129402
         )
         # parameters for the `commands_select` table
         parameters = list(commands[update.message.chat.id].values())
         # check the data type of year
         if parameters[1].startswith('люб'):
             parameters[1] = None
-            
+
         # update tables
         update_users.update_command_database(new_command, tuple(parameters))
 
@@ -210,7 +218,9 @@ async def mode(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         text = messages.user_dramas(None, update.message.from_user.language_code)
         logger.warning(ex)
 
-    await update.message.reply_text(text=text, parse_mode='Markdown')
+    await update.message.reply_text(
+        text=text, parse_mode='Markdown', reply_markup=ReplyKeyboardRemove()
+    )
 
     return ConversationHandler.END
 
@@ -222,11 +232,21 @@ async def cancel(update: Update, context: CallbackContext) -> int:
         update.message.from_user.id
         , 'cancel'
         , dt.now()
+        , True
     )
     update_users.update_command_database(new_command)
 
     await update.message.reply_text(text=text, reply_markup=ReplyKeyboardRemove())
     return ConversationHandler.END
+
+
+# USER'S MESSAGES -----------------------------------------------------------------------------------------------------
+async def message(update: Update, context: CallbackContext):
+    if isinstance(update.message.text, str):
+        text = messages.text_message(update.message.text, update.message.from_user.language_code)
+    else:
+        text = messages.incorrect_message(update.message.from_user.language_code)
+    await update.message.reply_text(text=text)
 
 
 if __name__ == '__main__':
@@ -265,5 +285,8 @@ if __name__ == '__main__':
         fallbacks=[CommandHandler("cancel", cancel)],
     )
     application.add_handler(conv_handler)
+
+    message_handler = MessageHandler(None, message)
+    application.add_handler(message_handler)
 
     application.run_polling()

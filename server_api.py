@@ -1,10 +1,10 @@
 """
-- get the query from the bot
-- setup parameters values
+- get the query from the bot and the config file
+- create a query to the kinopoiskAPI
 - get the actual information from the kinopoiskAPI
 - send information to the bot
 
-- *default parameters' values in the config-file
+- *default parameters values in the config-file
 """
 
 
@@ -15,13 +15,15 @@ import pandas as pd
 from random import randrange
 
 
+# load the year for the correct query to the kinopoiskAPI
 TODAY_YEAR = date.today().year
 
-
+# load configs
 with open('configuration/config_server_api.yaml', 'r') as handle:
     config = yaml.full_load(handle)
 
 
+# send queries to the kinopoiskAPI (for all pages)
 def load_data(query: dict) -> dict:
     headers = query['headers']
     url = query['url']
@@ -37,6 +39,7 @@ def load_data(query: dict) -> dict:
     return response_json
 
 
+# convert response into a pd.DataFrame with necessary information
 def prepare_data(dataset: list) -> pd.DataFrame:
     data = []
     for elem in dataset:
@@ -82,24 +85,26 @@ def prepare_data(dataset: list) -> pd.DataFrame:
     return df
 
 
+# return the random element from the DataFrame
 def random_dramas(df: pd.DataFrame) -> pd.Series:
     random_id = randrange(len(df))
     return df.iloc[random_id]
 
 
+# return the necessary count of DataFrame top elements
 def slice_list_dramas(df: pd.DataFrame, count_elem: int) -> pd.DataFrame:
     return df[:count_elem]
 
 
 # --------------------------------------------- THE MAIN PART ---------------------------------------------
+# formatting the result, depending on the user's query
 def find_serials(mode: str
                  , parameters: dict = None
                  ) -> pd.DataFrame | pd.Series:  # TODO: sending user's parameters
-    # DIFFERENT MODES:
+    # DIFFERENT MODES -> for different commands:
     # best last dramas
     if mode == 'last':
-        # reading from config-file
-        query = config['default_query_last']
+        query = config['default_query_last']  # reading from config-file
         count_elem = int(query['count_elem'])
 
         response = load_data(query)
@@ -109,8 +114,7 @@ def find_serials(mode: str
 
     # random drama
     if mode == 'random':
-        # reading from config-file
-        query = config['default_query_random']
+        query = config['default_query_random']  # reading from config-file
 
         response = load_data(query)
         df = prepare_data(response['docs'])
@@ -118,8 +122,7 @@ def find_serials(mode: str
 
     # drama by user's parameters
     if mode == 'user choice':
-        # reading from config-file
-        query = config['default_query_user']
+        query = config['default_query_user']  # reading from config-file
 
         # additional params
         count_elem = parameters['count']

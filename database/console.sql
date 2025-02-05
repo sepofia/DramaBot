@@ -65,7 +65,8 @@ CREATE TABLE commands
     user_id         INTEGER,
     FOREIGN KEY (user_id) REFERENCES users(id),
     command_type    VARCHAR(100),
-    date_time       TIMESTAMP
+    date_time       TIMESTAMP,
+    result          BOOLEAN
 );
 
 -- DROP TABLE commands;

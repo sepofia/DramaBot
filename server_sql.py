@@ -1,7 +1,8 @@
 """
 - get the query from the bot
-- setup parameters values
-- get the actual information from my own database
+- setup parameters values for the SQL-query to a local database
+  * all SQL-queries in the `database/queries.py` file
+- get the result from my local database
 - send information to the bot
 """
 
@@ -11,22 +12,20 @@ import pandas as pd
 from database import queries as dq
 
 
+# launch the necessary function from `queries.py`, depending on the user's command
 def find_serials(mode: str
                  , parameters: dict = None
                  ) -> pd.DataFrame | pd.Series:
-    # DIFFERENT MODES:
-    # random drama
-    if mode == 'random':
+    # DIFFERENT MODES -> for different commands:
+    if mode == 'random':        # random drama
         answer = dq.random()
         return pd.Series(answer)
 
-    # best last dramas
-    if mode == 'last':
+    if mode == 'last':          # best last dramas
         answer = dq.last()
         return pd.DataFrame(answer)
 
-    # drama by user's parameters
-    if mode == 'user choice':
+    if mode == 'user choice':   # drama by user's parameters
         answer = dq.select(
             usr_genre=parameters['genres.name']
             , usr_country=parameters['countries.name']
