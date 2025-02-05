@@ -1,7 +1,5 @@
 # DoramaBot
 
----
-
 ## Content
 
 - Documentation:
@@ -45,14 +43,11 @@ a `400 bad request` error.
    - different Handlers (`CommandHandler` for command messages like `/start` and `MessageHandler` for other messages),
    - filters in `Handler` (`filters.TEXT`, `filters.AUDIO` etc.).
 
-
 ---
 
 ## Bot actions structure
 
 <img src="bot_actions_structure.png" width="680">
-
----
 
 ## Database structure
 
