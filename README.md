@@ -3,18 +3,21 @@
 ## Content
 
 - Documentation:
-  - [Kinopoisk API](#Information about the Kinopoisk API)
-  - [Python library for telegram bot](#Information about the general library)
+  - [Kinopoisk API](#api)
+  - [Python library for telegram bot](#library)
 - Project structure:
-  - [Bot](#Bot actions structure)
-  - [Database](#Database structure)
+  - [Bot](#bot)
+  - [Database](#database)
 
 ---
 
+<!-- headings -->
+<a id="api"></a>
 ## Information about the Kinopoisk API
 
 *Documentation is on the [link](https://kinopoiskdev.readme.io/reference/фильмы-сериалы-и-тд).*
 
+<a id="library"></a>
 ## Information about the general library
 
 *Documentation for `python-telegram-bot` library [here](https://docs.python-telegram-bot.org/en/stable/index.html).*
@@ -45,10 +48,12 @@ a `400 bad request` error.
 
 ---
 
+<a id="bot"></a>
 ## Bot actions structure
 
 <img src="bot_actions_structure.png" width="680">
 
+<a id="database"></a>
 ## Database structure
 
 <img src="database_structure.png" width="680">
