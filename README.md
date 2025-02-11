@@ -54,6 +54,6 @@ a `400 bad request` error.
 <img src="bot_actions_structure.png" width="680">
 
 <a id="database"></a>
-## Database structure
+## Database ER-diagram
 
-<img src="database_structure.png" width="680">
+<img src="database_er-diagram.png" width="680">
