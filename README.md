@@ -1,5 +1,7 @@
 # DoramaBot
 
+**Telegram Bot** for searching for the best dramas on Kinopoisk: https://t.me/best_kdramas_bot.
+
 ## Content
 
 - Documentation:
