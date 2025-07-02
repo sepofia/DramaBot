@@ -6,6 +6,7 @@
 """
 
 
+import os
 import yaml
 import logging
 import psycopg2
@@ -14,23 +15,23 @@ from contextlib import closing
 
 
 # load config-file for connection with local Database
-with open('C:/Users/пк/Documents/repositories/DoramaBot/configuration/config_database.yaml', 'r') as handle:
+WORK_DIR = os.environ.get('PROJECT_PATH', os.getcwd())
+with open(WORK_DIR + '/configuration/config_database.yaml', 'r') as handle:
     configs = yaml.full_load(handle)
 
-with open('C:/Users/пк/Documents/repositories/DoramaBot/configuration/config_logger.yaml', 'r') as handle:
+with open(WORK_DIR + '/configuration/config_logger.yaml', 'r') as handle:
     logger_config = yaml.full_load(handle)
 
 
 # logging
-log_filename = logger_config['bot_logging']
-
-with open(log_filename, 'a') as handle:
-    handle.write('\n\n -- NEW SESSION -- \n')
+# log_filename = WORK_DIR + logger_config['bot_logging']
+# with open(log_filename, 'a') as handle:
+#     handle.write('\n\n -- NEW SESSION -- \n')
 
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
     , level=logging.INFO
-    , filename=log_filename
+    # , filename=log_filename
 )
 logger = logging.getLogger('my_logs')
 
@@ -53,6 +54,8 @@ def update_users_database(value: tuple) -> None:
 
             value_sql = sql.SQL(',').join(map(sql.Literal, [value]))
             insert = sql.SQL('INSERT INTO users VALUES {};').format(value_sql)
+            print(value)
+            print(value_sql)
             cursor.execute(insert)
             logger.info(f'User {value[0]} added in the local database')
 

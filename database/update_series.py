@@ -4,44 +4,48 @@
 """
 
 import logging
-
+import asyncio
+import os
 import yaml
 import json
 import requests
 import psycopg2
+import time
+
 from psycopg2 import sql
 from psycopg2.extras import DictCursor
 from contextlib import closing
+from googletrans import Translator
 
 
+WORK_DIR = os.environ.get('PROJECT_PATH', os.getcwd())
 # load configurate files
-with open('../configuration/config_server_api.yaml', 'r') as handle:
+with open(WORK_DIR + '/configuration/config_server_api.yaml', 'r') as handle:
     config = yaml.full_load(handle)
 
-with open('../configuration/config_database.yaml', 'r') as handle:
+with open(WORK_DIR + '/configuration/config_database.yaml', 'r') as handle:
     configs = yaml.full_load(handle)
 
-with open('../configuration/config_logger.yaml', 'r') as handle:
+with open(WORK_DIR + '/configuration/config_logger.yaml', 'r') as handle:
     logger_config = yaml.full_load(handle)
 
 # load files with translated inscriptions
-with open('translate_genres.json', encoding='utf-8') as handle:
+with open(WORK_DIR + '/database/translate_genres.json', encoding='utf-8') as handle:
     dict_genres = json.load(handle)
 
-with open('translate_countries.json', encoding='utf-8') as handle:
+with open(WORK_DIR + '/database/translate_countries.json', encoding='utf-8') as handle:
     dict_countries = json.load(handle)
 
 
 # logging
-log_filename = logger_config['series_logging']
-
-with open(log_filename, 'a') as handle:
-    handle.write(' -- NEW SESSION -- \n')
+# log_filename = WORK_DIR + logger_config['series_logging']
+# with open(log_filename, 'a') as handle:
+#     handle.write(' -- NEW SESSION -- \n')
 
 logging.basicConfig(
-    filename=log_filename
-    , format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
     , level=logging.INFO
+    # , filename=log_filename
 )
 logger = logging.getLogger('my_logs')
 
@@ -118,13 +122,35 @@ def load_all_dataset() -> list:
 
     return new_data
 
+def run_async(func, *args, **kwargs):
+    try:
+        loop = asyncio.get_running_loop()
+    except RuntimeError:
+        loop = None
+    if loop and loop.is_running():
+        return loop.run_until_complete(func(*args, **kwargs))
+    else:
+        return asyncio.run(func(*args, **kwargs))
 
 def create_different_datasets(dataset: list) -> (list, list, list):
+    def translate_text(selected_translator: Translator, ru_texts: str) -> str | None:
+        try:
+            en_text = run_async(selected_translator.translate, ru_texts, dest='en', src='ru')
+            return en_text.text
+        except Exception as e:
+            logger.info(e)
+            return None
+
     logger.info('Start formatting datasets for local Database')
 
     series_values, countries_values, genres_values = [], [], []
     pr_key = set()
-    for elem in dataset:
+
+    # translating
+    translator = Translator()
+    n = len(dataset)
+
+    for i, elem in enumerate(dataset):
         kp_id = elem['id']
         if kp_id in pr_key:
             continue
@@ -132,10 +158,21 @@ def create_different_datasets(dataset: list) -> (list, list, list):
         # name and description
         name = elem['name']
         if name is None:
+            # pass the unknown dramas
             continue
+
+        alternative_name = elem['alternativeName']
+        if alternative_name is None:
+            alternative_name = name
+
         description = elem['shortDescription']
         if description is None:
             description = elem['description']
+
+        if description is None:
+            description_en = None
+        else:
+            description_en = translate_text(translator, description) if description else ''
 
         # release year
         production_year = elem['year']
@@ -146,9 +183,21 @@ def create_different_datasets(dataset: list) -> (list, list, list):
         # genres to string
         list_genres = [genre['name'] for genre in elem['genres']]
         all_genres = ', '.join(list_genres)
+        try:
+            all_genres_en = ', '.join(
+                [' '.join(dict_genres["ru-en"][genre_i].split("_")) for genre_i in list_genres]
+            )
+        except:
+            all_genres_en = translate_text(translator, all_genres)
         # countries to string
         list_countries = [country['name'] for country in elem['countries']]
         all_countries = ', '.join(list_countries)
+        try:
+            all_countries_en = ', '.join(
+                [' '.join(dict_countries["ru-en"][country_i].split("_")) for country_i in list_countries]
+            )
+        except:
+            all_countries_en = translate_text(translator, all_countries)
 
         # create link
         link = f'https://www.kinopoisk.ru/series/{str(kp_id)}/'
@@ -156,13 +205,17 @@ def create_different_datasets(dataset: list) -> (list, list, list):
         elem_series = (
             kp_id
             , name
+            , alternative_name
             , kp_rating
             , imdb_rating
             , production_year
             , link
             , description
+            , description_en
             , all_countries
+            , all_countries_en
             , all_genres
+            , all_genres_en
         )
 
         elem_countries_bools = [country in list_countries for country in dict_countries['ru-en']]
@@ -174,6 +227,9 @@ def create_different_datasets(dataset: list) -> (list, list, list):
         series_values.append(elem_series)
         countries_values.append(elem_countries)
         genres_values.append(elem_genres)
+
+        if i % 10 == 0:
+            logger.info(f'{round(i / n * 100, 2)}%')
 
     logger.info('Successful formatting datasets for local database')
     return series_values, countries_values, genres_values
@@ -210,13 +266,18 @@ def create_series_databases(
 
 # launch --------------------------------------------------------------------------------------------------------
 def launch_creating_datasets() -> None:
+    start_time = time.time()
     data_from_api = load_all_dataset()
+
+    kp_time = time.time()
+    logger.info(f'The loading from KinoPoisk takes {kp_time - start_time} seconds')
+
     series, countries, genres = create_different_datasets(data_from_api)
     if not series:
         logger.info('There is no new date to add to the local database\n\n')
     else:
         create_series_databases(series, countries, genres)
 
-
-if __name__ == '__main__':
-    launch_creating_datasets()
+    db_time = time.time()
+    logger.info(f'The preparing and saving to the database take {db_time - kp_time} seconds')
+    logger.info(f'All actions take {db_time - start_time} seconds')

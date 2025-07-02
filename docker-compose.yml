@@ -1,0 +1,88 @@
+version: "3.7"
+
+services:
+  db:
+    image: postgres:15
+    container_name: kdramas_db
+    secrets:
+      - db_name
+      - db_user
+      - db_password
+    environment:
+      POSTGRES_DB_FILE: /run/secrets/db_name
+      POSTGRES_USER_FILE: /run/secrets/db_user
+      POSTGRES_PASSWORD_FILE: /run/secrets/db_password
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./init-database.sh:/docker-entrypoint-initdb.d/init-database.sh
+      - ./healthcheck.sh:/usr/local/bin/healthcheck.sh
+    ports:
+      - 5432:5432
+    healthcheck:
+      test: ["CMD", "bash", "/usr/local/bin/healthcheck.sh"]
+      start_period: 60s
+      interval: 30s
+      retries: 10
+    restart: unless-stopped
+
+  backup:
+    image: postgres:15
+    container_name: kdramas_db_backup
+    build:
+      context: ./DramaBot
+      dockerfile: Dockerfile.backup
+    depends_on:
+      db:
+        condition: service_healthy
+    secrets:
+      - db_name
+      - db_user
+      - db_password
+    environment:
+      PGPASSWORD_FILE: /run/secrets/db_password
+    env_file:
+      .env
+    volumes:
+      - postgres-data:/var/lib/postgresql/data:ro
+      - ./db_backups:/backups
+    entrypoint: [ "bash", "/usr/local/bin/backup.sh" ]
+
+  bot:
+    image: kdramas_bot
+    container_name: kdramas_bot
+    build:
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+      db:
+        condition: service_healthy
+
+  adminer:
+    image: adminer:5.3.0
+    container_name: kdramas_adminer
+    depends_on:
+      db:
+        condition: service_healthy
+    secrets:
+      - db_name
+    environment:
+      ADMINER_DEFAULT_DB_DRIVER: postgresql
+      ADMINER_DEFAULT_DB_HOST: db
+      ADMINER_DEFAULT_DB_NAME: db_name
+      ADMINER_DESIGN: pappu687
+    ports:
+      - 8080:8080
+    restart: unless-stopped
+
+secrets:
+  db_name:
+    file: ./secrets/db_name
+  db_user:
+    file: ./secrets/db_user
+  db_password:
+    file: ./secrets/db_password
+
+volumes:
+  postgres-data:
+  db_backups:
+    driver: local

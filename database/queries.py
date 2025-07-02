@@ -3,6 +3,7 @@
 """
 
 
+import sys
 import yaml
 import json
 import psycopg2
@@ -10,22 +11,43 @@ from psycopg2.extras import DictCursor
 from contextlib import closing
 
 
+WORK_DIR = sys.path[0]
 # load configurate files
-with open('C:/Users/пк/Documents/repositories/DoramaBot/configuration/config_database.yaml', 'r') as handle:
+with open(WORK_DIR + '/configuration/config_database.yaml', 'r') as handle:
     configs = yaml.full_load(handle)
 
 # load files with translated inscriptions
-with open('C:/Users/пк/Documents/repositories/DoramaBot/database/translate_genres.json', encoding='utf-8') as handle:
+with open(WORK_DIR + '/database/translate_genres.json', encoding='utf-8') as handle:
     dict_genres = json.load(handle)
 
-with open('C:/Users/пк/Documents/repositories/DoramaBot/database/translate_countries.json', encoding='utf-8') as handle:
+with open(WORK_DIR + '/database/translate_countries.json', encoding='utf-8') as handle:
     dict_countries = json.load(handle)
+
+
+def prepare_one_drama(row) -> dict:
+    # parsing the output from the database
+    (_, name, alternative_name, kp, imdb, production_year, link,
+     description, description_en, countries, countries_en, genres, genres_en) = row
+    return {
+        'Name': name
+        , 'Alternative name': alternative_name
+        , 'Description': description
+        , 'Description_en': description_en
+        , 'KP rating': kp
+        , 'IMDB rating': imdb
+        , 'Genres': genres
+        , 'Genres_en': genres_en
+        , 'Country': countries
+        , 'Country_en': countries_en
+        , 'Release year': production_year
+        , 'Link': link
+    }
 
 
 # QUERY -> DATABASE -> OUTPUT
 def random() -> dict:
     # create database session
-    with closing(psycopg2.connect(**configs)) as conn:
+    with (closing(psycopg2.connect(**configs)) as conn):
         with conn.cursor(cursor_factory=DictCursor) as cursor:
             cursor.execute('SELECT t.* '
                            'FROM tv_series AS t '
@@ -36,18 +58,9 @@ def random() -> dict:
                            'LIMIT 1;')
 
             row = cursor.fetchall()
-            _, name, kp, imdb, production_year, link, description, countries, genres = row[0]
-            answer = {
-                'Name': name
-                , 'Description': description
-                , 'KP rating': kp
-                , 'IMDB rating': imdb
-                , 'Genres': genres
-                , 'Country': countries
-                , 'Release year': production_year
-                , 'Link': link
-            }
-            return answer
+            if len(row) == 0 or row is None:
+                return {}
+            return prepare_one_drama(row[0])
 
 
 def last() -> list[dict]:
@@ -62,18 +75,7 @@ def last() -> list[dict]:
                            'LIMIT 5;')
             answer = []
             for row in cursor:
-                _, name, kp, imdb, production_year, link, description, countries, genres = row
-                new_elem = {
-                    'Name': name
-                    , 'Description': description
-                    , 'KP rating': kp
-                    , 'IMDB rating': imdb
-                    , 'Genres': genres
-                    , 'Country': countries
-                    , 'Release year': production_year
-                    , 'Link': link
-                }
-                answer.append(new_elem)
+                answer.append(prepare_one_drama(row))
             return answer
 
 
@@ -112,16 +114,5 @@ def select(
 
             answer = []
             for row in cursor:
-                _, name, kp, imdb, production_year, link, description, countries, genres = row
-                new_elem = {
-                    'Name': name
-                    , 'Description': description
-                    , 'KP rating': kp
-                    , 'IMDB rating': imdb
-                    , 'Genres': genres
-                    , 'Country': countries
-                    , 'Release year': production_year
-                    , 'Link': link
-                }
-                answer.append(new_elem)
+                answer.append(prepare_one_drama(row))
             return answer

@@ -5,8 +5,8 @@
 """
 
 
+import nest_asyncio
 import logging
-
 import yaml
 import json
 from telegram import Update, ReplyKeyboardMarkup, ReplyKeyboardRemove
@@ -21,10 +21,12 @@ from telegram.ext import (
 )
 
 from datetime import datetime as dt
-from server_sql import find_serials
+from server.sql import find_serials
 from utils import messages
-from database import update_users
+from database import update_users, update_series
 
+
+nest_asyncio.apply()
 
 # logging
 logging.basicConfig(
@@ -76,6 +78,20 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     # send a message to the user
     text = messages.start(user[2], user[3])
+    await update.message.reply_text(text=text, parse_mode='Markdown', reply_markup=ReplyKeyboardRemove())
+
+
+async def info(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    text = messages.info(update.message.from_user.language_code)
+
+    new_command = (
+        update.message.from_user.id
+        , 'info'
+        , dt.now()
+        , True
+    )
+    update_users.update_command_database(new_command)
+
     await update.message.reply_text(text=text, parse_mode='Markdown', reply_markup=ReplyKeyboardRemove())
 
 
@@ -240,6 +256,24 @@ async def cancel(update: Update, context: CallbackContext) -> int:
     return ConversationHandler.END
 
 
+# secret bot command
+async def update_database(update: Update, context: ContextTypes.DEFAULT_TYPE):
+
+    flag_access = update.message.from_user.id == 7761512780
+    if flag_access:
+        update_series.launch_creating_datasets()
+    text = messages.update_database_message(flag_access)
+
+    new_command = (
+        update.message.from_user.id
+        , 'update_database'
+        , dt.now()
+        , flag_access
+    )
+    update_users.update_command_database(new_command)
+    await context.bot.send_message(chat_id=update.effective_chat.id, text=text, parse_mode='Markdown')
+
+
 # USER'S MESSAGES -----------------------------------------------------------------------------------------------------
 async def message(update: Update, context: CallbackContext):
     if isinstance(update.message.text, str):
@@ -261,6 +295,9 @@ if __name__ == '__main__':
 
     start_handler = CommandHandler('start', start)
     application.add_handler(start_handler)
+
+    info_handler = CommandHandler('info', info)
+    application.add_handler(info_handler)
 
     last_handler = CommandHandler('last', last)
     application.add_handler(last_handler)
@@ -285,6 +322,9 @@ if __name__ == '__main__':
         fallbacks=[CommandHandler("cancel", cancel)],
     )
     application.add_handler(conv_handler)
+
+    database_handler = CommandHandler("update_database", update_database)
+    application.add_handler(database_handler)
 
     message_handler = MessageHandler(None, message)
     application.add_handler(message_handler)

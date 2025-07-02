@@ -1,12 +1,15 @@
-# Ignore the IDE files
-.idea/
-__pycache__/
-
-# Ignore the config-file
+# secret files
 /configuration/
+/secrets/
+service_account.json
+.env
 
-# Ignore the help-files
+# supporting files
 /supporting_files/
 
-# Ignore the log-files
-/logs/
+# IDEA files
+/.venv/
+/.vscode/
+*/__pycache__/
+.idea/
+__pycache__/

@@ -1,0 +1,19 @@
+FROM postgres:15
+
+# Install Python & curl
+RUN apt-get update && \
+    apt-get install -y curl python3 python3-pip
+
+# Copy backup, upload scripts and configurate files
+COPY backup.sh /usr/local/bin/backup.sh
+RUN chmod +x /usr/local/bin/backup.sh
+
+COPY requirements_backup.txt /usr/local/bin/requirements_backup.txt
+COPY service_account.json /usr/local/bin/service_account.json
+COPY upload_to_drive.py /usr/local/bin/upload_to_drive.py
+
+
+# Install Python libs for Google Drive API
+RUN pip install --no-cache-dir \
+    --break-system-packages \
+    -r /usr/local/bin/requirements_backup.txt
